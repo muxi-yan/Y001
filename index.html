@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>销售分析 - 大数据平台</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:"Segoe UI","Microsoft YaHei","PingFang SC","Helvetica Neue",Arial,sans-serif;
+    background:#fff;color:#2c3e5c;font-size:14px;
+  }
+
+  /* ===== 顶部导航 ===== */
+  .topbar{
+    position:sticky;top:0;z-index:50;display:flex;align-items:stretch;height:58px;
+    background:#1890ff;
+    box-shadow:0 2px 10px rgba(24,144,255,.32);
+  }
+  .brand{display:flex;align-items:center;gap:10px;padding:0 18px;min-width:218px;border-right:1px solid rgba(255,255,255,.12)}
+  .logo{
+    width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+    background:rgba(255,255,255,.16);color:#fff;font-size:16px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22);
+  }
+  .brand-text{display:flex;flex-direction:column;line-height:1.2}
+  .brand-text strong{color:#fff;font-size:16px;letter-spacing:1px}
+  .brand-text small{color:rgba(255,255,255,.72);font-size:9px;letter-spacing:1.6px}
+  .main-nav{flex:1;display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;padding:0 6px}
+  .main-nav::-webkit-scrollbar{display:none}
+  .nav-item{
+    flex-shrink:0;height:58px;display:flex;align-items:center;padding:0 14px;position:relative;
+    color:rgba(255,255,255,.82);font-size:14px;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s;
+  }
+  .nav-item:hover{color:#fff;background:rgba(255,255,255,.08)}
+  .nav-item.active{color:#fff;font-weight:600;background:rgba(255,255,255,.18)}
+  .nav-item.active::after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:3px;background:#fff;border-radius:3px 3px 0 0}
+  .top-actions{display:flex;align-items:center;gap:14px;padding:0 16px 0 14px;min-width:330px}
+  .search-box{position:relative;width:220px}
+  .search-box i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.75);font-size:13px}
+  .search-box input{
+    width:100%;height:32px;border:1px solid rgba(255,255,255,.35);border-radius:16px;background:rgba(255,255,255,.14);
+    color:#fff;padding:0 12px 0 30px;font-size:13px;outline:none;transition:.2s;
+  }
+  .search-box input::placeholder{color:rgba(255,255,255,.72)}
+  .search-box input:focus{background:rgba(255,255,255,.26);border-color:rgba(255,255,255,.7)}
+  .icon-btn{
+    position:relative;width:32px;height:32px;border:none;border-radius:50%;background:rgba(255,255,255,.12);
+    color:#fff;font-size:15px;cursor:pointer;transition:.2s;
+  }
+  .icon-btn:hover{background:rgba(255,255,255,.24)}
+  .icon-btn .dot{position:absolute;top:6px;right:7px;width:7px;height:7px;border-radius:50%;background:#ffd34d;border:1px solid #0a2c6c}
+  .avatar{
+    width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#ffb45e,#ff7b54);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;
+    box-shadow:0 0 0 2px rgba(255,255,255,.35);cursor:pointer;
+  }
+
+  /* ===== 页面主体 ===== */
+  .page{max-width:1720px;margin:0 auto;padding:18px 22px 30px}
+  .tab-bar{background:#fff;border-bottom:1px solid #e7edf6;padding:10px 22px 0}
+  .tab{
+    display:inline-flex;align-items:center;height:36px;padding:0 24px;background:#1890ff;color:#fff;
+    font-size:14px;font-weight:600;border-radius:6px 6px 0 0;box-shadow:0 -2px 6px rgba(24,144,255,.12);
+  }
+
+  /* ===== 筛选区 ===== */
+  .filter-panel{background:#fff;padding:16px 18px 14px}
+  .filter-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px 18px}
+  .hidden{display:none!important}
+  .form-item{display:flex;align-items:center;gap:8px;min-width:0}
+  .form-label{flex:0 0 112px;text-align:right;font-size:12px;color:#55637c;white-space:nowrap}
+  .form-label.changed{color:#e5484d;font-weight:600}
+  .control{
+    height:32px;width:100%;min-width:0;border:1px solid #ccd8e8;border-radius:4px;background:#fff;
+    padding:0 8px;font-size:13px;color:#2c3e5c;outline:none;transition:border-color .15s,box-shadow .15s;
+  }
+  .control:focus{border-color:#2f7fe0;box-shadow:0 0 0 3px rgba(47,127,224,.14)}
+  .control:disabled{background:#eef2f7;color:#9aa7bd;cursor:not-allowed}
+  select.control option.red{color:#e5484d;font-weight:600}
+  .range-group{display:flex;align-items:center;gap:6px;width:100%}
+  .range-group input{flex:1;min-width:0}
+  .range-group span{color:#8a97ad;font-size:12px;flex-shrink:0}
+  .input-unit{position:relative;flex:1;min-width:0;display:flex}
+  .input-unit input{padding-right:26px}
+  .input-unit span{
+    position:absolute;right:8px;top:50%;transform:translateY(-50%);
+    color:#8a97ad;font-size:12px;pointer-events:none;
+  }
+  .dpr{position:relative;width:100%;min-width:0}
+  .dpr-trigger{
+    width:100%;height:32px;display:flex;align-items:center;justify-content:space-between;gap:6px;
+    border:1px solid #ccd8e8;border-radius:4px;background:#fff;padding:0 8px;font-size:13px;
+    color:#2c3e5c;cursor:pointer;outline:none;transition:border-color .15s,box-shadow .15s;
+  }
+  .dpr-trigger:hover{border-color:#9fb6d4}
+  .dpr-trigger .dpr-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;text-align:left}
+  .dpr-trigger i{color:#8a97ad;font-size:13px;flex-shrink:0}
+  .dpr.open .dpr-trigger{border-color:#1890ff;box-shadow:0 0 0 3px rgba(24,144,255,.15)}
+  .dpr-panel{
+    position:absolute;top:34px;left:0;z-index:30;width:286px;background:#fff;
+    border:1px solid #d5e0ee;border-radius:6px;box-shadow:0 8px 20px rgba(20,45,90,.16);padding:10px;
+  }
+  .dpr-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .dpr-head button{
+    width:24px;height:24px;border:1px solid #d5e0ee;border-radius:4px;background:#fff;
+    color:#42536f;cursor:pointer;font-size:13px;line-height:1;
+  }
+  .dpr-month{font-size:13px;color:#1d3358;font-weight:600}
+  .dpr-week{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:11px;color:#8a97ad;margin-bottom:4px}
+  .dpr-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+  .dpr-day{
+    height:28px;border:none;background:none;border-radius:4px;font-size:12px;color:#2c3e5c;cursor:pointer;
+  }
+  .dpr-day:hover{background:#f0f6ff}
+  .dpr-day.in-range{background:#e8f2ff;border-radius:0}
+  .dpr-day.start,.dpr-day.end{background:#1890ff;color:#fff;font-weight:600;border-radius:4px}
+  .dpr-empty{height:28px}
+  .dpr-foot{display:flex;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid #eef2f8}
+  .dpr-foot button{
+    border:1px solid #d5e0ee;border-radius:4px;background:#fff;color:#42536f;
+    font-size:12px;padding:4px 10px;cursor:pointer;
+  }
+  .dpr-foot button:hover{border-color:#8fb0da;color:#1890ff}
+  .msel{position:relative;width:100%;min-width:0}
+  .msel-trigger{
+    width:100%;height:32px;display:flex;align-items:center;justify-content:space-between;gap:6px;
+    border:1px solid #ccd8e8;border-radius:4px;background:#fff;padding:0 8px;font-size:13px;
+    color:#2c3e5c;cursor:pointer;outline:none;transition:border-color .15s,box-shadow .15s;
+  }
+  .msel-trigger:hover{border-color:#9fb6d4}
+  .msel-trigger .msel-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;text-align:left}
+  .msel-trigger i{color:#8a97ad;font-size:12px;flex-shrink:0;transition:transform .15s}
+  .msel.open .msel-trigger{border-color:#1890ff;box-shadow:0 0 0 3px rgba(24,144,255,.15)}
+  .msel.open .msel-trigger i{transform:rotate(180deg)}
+  .msel-panel{
+    position:absolute;top:34px;left:0;z-index:30;width:max-content;min-width:100%;max-width:300px;
+    background:#fff;border:1px solid #d5e0ee;border-radius:6px;box-shadow:0 8px 20px rgba(20,45,90,.16);
+  }
+  .msel-head{
+    display:flex;align-items:center;justify-content:space-between;padding:8px 10px;
+    border-bottom:1px solid #eef2f8;font-size:12px;color:#42536f;
+  }
+  .msel-all-row{display:flex;align-items:center;gap:5px;cursor:pointer}
+  .msel-all-row input,.msel-opt input{accent-color:#1890ff;width:14px;height:14px;flex-shrink:0}
+  .msel-clear{border:none;background:none;color:#1890ff;font-size:12px;cursor:pointer;padding:2px 4px}
+  .msel-list{max-height:240px;overflow:auto;padding:4px}
+  .msel-opt{
+    display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:4px;
+    font-size:13px;color:#2c3e5c;cursor:pointer;white-space:nowrap;
+  }
+  .msel-opt:hover{background:#f0f6ff}
+  .radio-group{display:flex;align-items:center;gap:14px;white-space:nowrap}
+  .radio-group label{display:flex;align-items:center;gap:5px;font-size:13px;color:#42536f;cursor:pointer}
+  .radio-group input{accent-color:#1769e0;width:14px;height:14px}
+  .filter-actions{display:flex;align-items:center;gap:10px;margin-top:14px}
+  .btn{
+    height:32px;padding:0 20px;border-radius:4px;border:1px solid #ccd7e6;background:#fff;color:#4b5b76;
+    font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s;
+    box-shadow:0 1px 2px rgba(20,45,90,.06);
+  }
+  .btn:hover{border-color:#9fb6d4;color:#1d3358}
+  .btn.primary{
+    background:linear-gradient(180deg,#2d7fe0,#1769d6);border-color:#1769d6;color:#fff;
+    box-shadow:0 2px 6px rgba(23,105,214,.28);
+  }
+  .btn.primary:hover{background:linear-gradient(180deg,#2373d2,#115bc0)}
+  .btn.small{height:28px;padding:0 12px;font-size:12px}
+
+  /* ===== 表格区 ===== */
+  .section-divider{height:1px;background:#dfe5ee;margin:16px 0}
+  .table-panel{background:#fff}
+  .table-wrap{overflow:auto;max-height:calc(100vh - 330px);min-height:280px}
+  table{width:max-content;min-width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+  thead th{
+    position:sticky;top:0;z-index:3;background:#edf3fb;color:#23406c;font-weight:600;
+    padding:10px 12px;border-bottom:1px solid #d3deee;white-space:nowrap;
+  }
+  thead th.changed{color:#e5484d}
+  tbody td{padding:9px 12px;border-bottom:1px solid #eef2f8;white-space:nowrap}
+  tbody tr:nth-child(even) td{background:#f7fafd}
+  tbody tr:nth-child(odd) td{background:#fff}
+  tbody tr:hover td{background:#e9f2ff}
+  tr.total-row td{background:#eaf3ff;font-weight:600;color:#1d3358;border-top:2px solid #d3deee}
+  tr.total-row:hover td{background:#eaf3ff}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  th.sticky,td.sticky{position:sticky;box-shadow:1px 0 0 #d9e3f1}
+  th.sticky-1,td.sticky-1{left:0;width:150px;min-width:150px;max-width:150px}
+  th.sticky-2,td.sticky-2{left:150px;width:150px;min-width:150px;max-width:150px}
+  td.sticky{z-index:2}
+  thead th.sticky{z-index:6}
+
+  /* ===== 分页 ===== */
+  .pagination{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;
+    border-top:1px solid #e7edf6;font-size:13px;color:#5a6b85;
+  }
+  .pagination-left{position:relative;display:flex;align-items:center;gap:8px}
+  .pagination-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .pagination b{color:#1d3358;font-weight:600}
+  .page-size{height:28px;border:1px solid #ccd8e8;border-radius:4px;background:#fff;padding:0 6px;font-size:12px;color:#42536f;outline:none}
+  .page-btn{
+    width:28px;height:28px;border:1px solid #ccd8e8;border-radius:4px;background:#fff;color:#42536f;
+    cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:.15s;
+  }
+  .page-btn:hover:not(:disabled){border-color:#8fb0da;color:#1769d6}
+  .page-btn:disabled{opacity:.45;cursor:not-allowed}
+  .page-numbers{display:flex;gap:6px;align-items:center}
+  .page-num{
+    min-width:28px;height:28px;padding:0 6px;border:1px solid transparent;border-radius:4px;background:transparent;
+    color:#42536f;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;
+  }
+  .page-num:hover{border-color:#ccd8e8;background:#f5f8fc}
+  .page-num.active{background:#1769d6;color:#fff;font-weight:600}
+  .page-ellipsis{color:#8a97ad;padding:0 2px}
+  .go{display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .go input{
+    width:52px;height:28px;border:1px solid #ccd8e8;border-radius:4px;text-align:center;font-size:12px;
+    color:#2c3e5c;outline:none;
+  }
+  .go input:focus{border-color:#2f7fe0;box-shadow:0 0 0 3px rgba(47,127,224,.12)}
+
+  /* ===== 数据说明与开发逻辑面板 ===== */
+  .user-doc-panel{
+    position:absolute;left:0;bottom:40px;width:min(580px,calc(100vw - 44px));max-height:62vh;overflow:auto;
+    background:#fff;border:1px solid #d5e0ee;border-radius:8px;box-shadow:0 10px 28px rgba(20,45,90,.18);
+    z-index:60;
+  }
+  .user-doc-head{
+    position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;
+    padding:10px 14px;border-bottom:1px solid #e7edf6;background:#f7fafd;
+  }
+  .user-doc-head strong{font-size:14px;color:#1d3358}
+  .user-doc-close{
+    border:none;background:none;font-size:20px;line-height:1;color:#8a97ad;cursor:pointer;padding:0 4px;
+  }
+  .user-doc-close:hover{color:#e5484d}
+  .user-doc-body{padding:12px 16px;font-size:12px;color:#42536f;line-height:1.7}
+  .user-doc-body h4{margin:10px 0 4px;font-size:13px;color:#1d3358}
+  .user-doc-body h4:first-child{margin-top:0}
+  .user-doc-body p{margin:3px 0}
+  .user-doc-body ol{margin:4px 0 4px 18px;padding:0}
+
+  .dev-panel{
+    position:fixed;top:58px;right:0;bottom:0;width:420px;background:#fff;border-left:1px solid #d5e0ee;
+    box-shadow:-6px 0 24px rgba(20,45,90,.10);z-index:70;display:flex;flex-direction:column;
+    transition:width .2s;
+  }
+  .dev-panel-head{
+    display:flex;align-items:center;justify-content:space-between;padding:10px 14px;
+    border-bottom:1px solid #e7edf6;background:#f7fafd;flex-shrink:0;
+  }
+  .dev-panel-head strong{font-size:14px;color:#1d3358}
+  .dev-close{
+    border:1px solid #d5e0ee;border-radius:4px;background:#fff;color:#42536f;
+    width:28px;height:28px;cursor:pointer;
+  }
+  .dev-close:hover{border-color:#8fb0da;color:#1890ff}
+  .dev-panel-body{padding:14px 16px;overflow:auto;font-size:12px;color:#42536f;line-height:1.75}
+  .dev-panel-body h1,.dev-panel-body h2,.dev-panel-body h3,.dev-panel-body h4{
+    margin:14px 0 6px;color:#1d3358;line-height:1.4;
+  }
+  .dev-panel-body h1{font-size:16px}
+  .dev-panel-body h2{font-size:14px;border-left:3px solid #1890ff;padding-left:8px}
+  .dev-panel-body h3{font-size:13px}
+  .dev-panel-body h4{font-size:12px}
+  .dev-panel-body h1:first-child{margin-top:0}
+  .dev-panel-body ul,.dev-panel-body ol{margin:4px 0 4px 18px;padding:0}
+  .dev-panel-body li{margin:2px 0}
+  .dev-panel-body p{margin:4px 0}
+  .dev-panel-body code{
+    background:#f2f6fb;border:1px solid #e0e8f4;border-radius:3px;padding:0 4px;
+    font-size:11px;color:#1769d6;
+  }
+  .dev-panel.collapsed{width:36px}
+  .dev-panel.collapsed .dev-panel-head,.dev-panel.collapsed .dev-panel-body{display:none}
+  .dev-reopen{
+    display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:24px;height:42px;border:1px solid #d5e0ee;border-radius:6px;background:#f7fafd;color:#1890ff;
+    cursor:pointer;align-items:center;justify-content:center;font-size:12px;padding:0;
+  }
+  .dev-reopen:hover{border-color:#8fb0da;background:#eef5ff}
+  .dev-panel.collapsed .dev-reopen{display:flex}
+
+  /* ===== 响应式 ===== */
+  @media (max-width:1360px){.filter-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+  @media (max-width:1120px){
+    .filter-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .top-actions{min-width:0}
+    .search-box{width:170px}
+  }
+  @media (max-width:900px){
+    .filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .brand{min-width:auto}
+    .page-head{flex-direction:column;align-items:flex-start}
+  }
+  @media (max-width:640px){
+    .filter-grid{grid-template-columns:1fr}
+    .top-actions .icon-btn{display:none}
+    .page{padding:12px}
+  }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo"><i class="fa-solid fa-database"></i></span>
+    <span class="brand-text">
+      <strong>大数据平台</strong>
+      <small>BIG DATA PLATFORM</small>
+    </span>
+  </div>
+  <nav class="main-nav">
+    <span class="nav-item">系统管理</span>
+    <span class="nav-item">经营看板</span>
+    <span class="nav-item active">销售分析</span>
+    <span class="nav-item">进销存分析</span>
+    <span class="nav-item">库存分析</span>
+    <span class="nav-item">顾客分析</span>
+    <span class="nav-item">采购分析</span>
+    <span class="nav-item">提货分析</span>
+    <span class="nav-item">风险管控</span>
+    <span class="nav-item">离线分析</span>
+  </nav>
+  <div class="top-actions">
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" placeholder="搜索菜单、报表、指标">
+    </div>
+    <button class="icon-btn" title="消息通知"><i class="fa-regular fa-bell"></i><span class="dot"></span></button>
+    <div class="avatar">木</div>
+  </div>
+</header>
+
+<div class="tab-bar">
+  <div class="tab">销售汇总表</div>
+</div>
+
+<main class="page">
+  <section class="filter-panel">
+    <div class="filter-grid">
+      <div class="form-item">
+        <label class="form-label">渠道</label>
+        <div class="msel" id="mselChannel">
+          <button type="button" class="msel-trigger"><span class="msel-label">全部</span><i class="fa-solid fa-angle-down"></i></button>
+          <div class="msel-panel hidden">
+            <div class="msel-head">
+              <label class="msel-all-row"><input type="checkbox" class="msel-all" checked> 全选</label>
+              <button type="button" class="msel-clear">清空</button>
+            </div>
+            <div class="msel-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-item">
+        <label class="form-label">门店</label>
+        <div class="msel" id="mselStore">
+          <button type="button" class="msel-trigger"><span class="msel-label">全部</span><i class="fa-solid fa-angle-down"></i></button>
+          <div class="msel-panel hidden">
+            <div class="msel-head">
+              <label class="msel-all-row"><input type="checkbox" class="msel-all" checked> 全选</label>
+              <button type="button" class="msel-clear">清空</button>
+            </div>
+            <div class="msel-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-item">
+        <label class="form-label">分析维度</label>
+        <select class="control" id="analysisDim"></select>
+      </div>
+      <div class="form-item">
+        <label class="form-label">叠加维度</label>
+        <select class="control" id="overlayDim"></select>
+      </div>
+      <div class="form-item">
+        <label class="form-label changed">效率指标</label>
+        <select class="control" id="efficiencySelect">
+          <option value="" selected>请选择</option>
+          <option value="产品交叉比率">产品交叉比率</option>
+          <option value="售罄率">售罄率</option>
+          <option value="动销率">动销率</option>
+        </select>
+      </div>
+
+      <div class="form-item">
+        <label class="form-label">销售日期</label>
+        <div class="dpr" id="dprSale">
+          <button type="button" class="dpr-trigger"><span class="dpr-label">2026-07-01 ~ 2026-07-31</span><i class="fa-solid fa-calendar"></i></button>
+          <div class="dpr-panel hidden">
+            <div class="dpr-head">
+              <button type="button" class="dpr-prev">&lt;</button>
+              <span class="dpr-month"></span>
+              <button type="button" class="dpr-next">&gt;</button>
+            </div>
+            <div class="dpr-week"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+            <div class="dpr-days"></div>
+            <div class="dpr-foot">
+              <button type="button" class="dpr-clear">清空</button>
+              <button type="button" class="dpr-today">今天</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-item">
+        <label class="form-label">对比日期</label>
+        <div class="dpr" id="dprCompare">
+          <button type="button" class="dpr-trigger"><span class="dpr-label">2026-06-01 ~ 2026-06-30</span><i class="fa-solid fa-calendar"></i></button>
+          <div class="dpr-panel hidden">
+            <div class="dpr-head">
+              <button type="button" class="dpr-prev">&lt;</button>
+              <span class="dpr-month"></span>
+              <button type="button" class="dpr-next">&gt;</button>
+            </div>
+            <div class="dpr-week"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+            <div class="dpr-days"></div>
+            <div class="dpr-foot">
+              <button type="button" class="dpr-clear">清空</button>
+              <button type="button" class="dpr-today">今天</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-item">
+        <label class="form-label">星期时间</label>
+        <select class="control" id="filterWeek">
+          <option>星期一</option>
+          <option>星期二</option>
+          <option>星期三</option>
+          <option>星期四</option>
+          <option>星期五</option>
+          <option>星期六</option>
+          <option>星期日</option>
+        </select>
+      </div>
+      <div class="form-item">
+        <label class="form-label">业务模式</label>
+        <select class="control" id="filterBizMode">
+          <option>全部</option>
+          <option>自营</option>
+          <option>联营</option>
+          <option>平台</option>
+          <option>代销</option>
+        </select>
+      </div>
+      <div class="form-item">
+        <label class="form-label">业务品类</label>
+        <select class="control" id="filterBizCategory">
+          <option>全部</option>
+          <option>护肤</option>
+          <option>彩妆</option>
+          <option>香水</option>
+          <option>保健食品</option>
+          <option>酒类</option>
+          <option>珠宝</option>
+          <option>腕表</option>
+        </select>
+      </div>
+
+      <div class="form-item">
+        <label class="form-label">内部分类</label>
+        <div class="msel" id="mselInternal">
+          <button type="button" class="msel-trigger"><span class="msel-label">全部</span><i class="fa-solid fa-angle-down"></i></button>
+          <div class="msel-panel hidden">
+            <div class="msel-head">
+              <label class="msel-all-row"><input type="checkbox" class="msel-all" checked> 全选</label>
+              <button type="button" class="msel-clear">清空</button>
+            </div>
+            <div class="msel-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-item">
+        <label class="form-label">商品分类</label>
+        <select class="control" id="filterCategory">
+          <option>全部</option>
+          <option>美妆个护</option>
+          <option>香化精品</option>
+          <option>酒水饮料</option>
+          <option>食品保健</option>
+          <option>时尚服饰</option>
+          <option>钟表珠宝</option>
+          <option>数码家电</option>
+          <option>家居百货</option>
+        </select>
+      </div>
+      <div class="form-item">
+        <label class="form-label">控制分类</label>
+        <div class="msel" id="mselControl">
+          <button type="button" class="msel-trigger"><span class="msel-label">全部</span><i class="fa-solid fa-angle-down"></i></button>
+          <div class="msel-panel hidden">
+            <div class="msel-head">
+              <label class="msel-all-row"><input type="checkbox" class="msel-all" checked> 全选</label>
+              <button type="button" class="msel-clear">清空</button>
+            </div>
+            <div class="msel-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-item">
+        <label class="form-label">供应商集团</label>
+        <select class="control" id="filterSupplier">
+          <option>全部</option>
+          <option>LVMH集团</option>
+          <option>欧莱雅集团</option>
+          <option>雅诗兰黛集团</option>
+          <option>资生堂集团</option>
+          <option>宝洁集团</option>
+          <option>联合利华集团</option>
+        </select>
+      </div>
+      <div class="form-item">
+        <label class="form-label">品牌</label>
+        <select class="control" id="filterBrand">
+          <option>全部</option>
+          <option>兰蔻</option>
+          <option>雅诗兰黛</option>
+          <option>SK-II</option>
+          <option>迪奥</option>
+          <option>香奈儿</option>
+          <option>海蓝之谜</option>
+          <option>娇兰</option>
+          <option>资生堂</option>
+        </select>
+      </div>
+
+      <div class="form-item">
+        <label class="form-label">商品范围</label>
+        <select class="control" id="filterGoodsScope">
+          <option>全部</option>
+          <option>免税品</option>
+          <option>完税品</option>
+          <option>跨境商品</option>
+        </select>
+      </div>
+      <div class="form-item">
+        <label class="form-label">商品编码</label>
+        <input class="control" type="text" id="filterGoodsCode" placeholder="请输入商品编码">
+      </div>
+      <div class="form-item">
+        <label class="form-label">售价</label>
+        <div class="range-group">
+          <input class="control" type="number" id="priceMin" placeholder="最低">
+          <span>至</span>
+          <input class="control" type="number" id="priceMax" placeholder="最高">
+        </div>
+      </div>
+      <div class="form-item">
+        <label class="form-label changed" id="segmentLabel">毛利区间分段</label>
+        <select class="control" id="segmentSelect" disabled>
+          <option value="5" selected>5</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+        </select>
+        <select class="control hidden" id="segmentSelectSale" disabled>
+          <option value="5" selected>5</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+        </select>
+      </div>
+      <div class="form-item">
+        <label class="form-label changed">毛利率区间</label>
+        <div class="range-group">
+          <div class="input-unit"><input class="control" type="number" id="grossMin" placeholder="0" disabled><span>%</span></div>
+          <span>至</span>
+          <div class="input-unit"><input class="control" type="number" id="grossMax" placeholder="100" disabled><span>%</span></div>
+        </div>
+      </div>
+
+      <div class="form-item">
+        <label class="form-label changed">正价折扣</label>
+        <div class="input-unit"><input class="control" type="number" id="filterDiscount" placeholder="请输入" value="85" disabled><span>%</span></div>
+      </div>
+      <div class="form-item">
+        <label class="form-label">提货方式</label>
+        <select class="control" id="filterDelivery">
+          <option>全部</option>
+          <option>自提</option>
+          <option>邮寄</option>
+          <option>机场提货</option>
+          <option>码头提货</option>
+          <option>离岛邮寄</option>
+        </select>
+      </div>
+      <div class="form-item">
+        <label class="form-label">离岛途径</label>
+        <select class="control" id="filterIsland">
+          <option>全部</option>
+          <option>机场提货</option>
+          <option>码头提货</option>
+          <option>火车站提货</option>
+          <option>邮寄</option>
+          <option>其他</option>
+        </select>
+      </div>
+      <div class="form-item">
+        <label class="form-label">订单类型</label>
+        <select class="control" id="filterOrderType">
+          <option>全部</option>
+          <option>普通订单</option>
+          <option>预订单</option>
+          <option>直播订单</option>
+          <option>团购订单</option>
+        </select>
+      </div>
+      <div class="form-item">
+        <label class="form-label">销售渠道</label>
+        <select class="control" id="filterSaleChannel">
+          <option>全部</option>
+          <option>线上</option>
+          <option>线下</option>
+          <option>离岛免税</option>
+          <option>跨境</option>
+        </select>
+      </div>
+
+      <div class="form-item">
+        <label class="form-label">客源地</label>
+        <select class="control" id="filterCustomerSource">
+          <option>线下</option>
+          <option>电商</option>
+          <option>扫码购</option>
+          <option>……</option>
+        </select>
+      </div>
+      <div class="form-item">
+        <label class="form-label">币种</label>
+        <div class="radio-group">
+          <label><input type="radio" name="currency" value="人民币" checked> 人民币</label>
+          <label><input type="radio" name="currency" value="本币"> 本币</label>
+        </div>
+      </div>
+      <div class="form-item">
+        <label class="form-label">页面语言</label>
+        <div class="radio-group">
+          <label><input type="radio" name="language" value="中文" checked> 中文</label>
+          <label><input type="radio" name="language" value="English"> English</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-actions">
+      <button class="btn primary" id="queryBtn"><i class="fa-solid fa-magnifying-glass"></i> 查询</button>
+      <button class="btn" id="resetBtn"><i class="fa-solid fa-rotate-left"></i> 重置</button>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <section class="table-panel">
+    <div class="table-wrap" id="tableWrap">
+      <table id="dataTable"></table>
+    </div>
+    <div class="pagination">
+      <div class="pagination-left">
+        <button class="btn small" id="exportBtn"><i class="fa-solid fa-download"></i> 导出</button>
+        <button class="btn small" id="docToggle" title="数据说明"><i class="fa-solid fa-circle-info"></i> 数据说明</button>
+        <div class="user-doc-panel hidden" id="userDocPanel">
+          <div class="user-doc-head">
+            <strong>数据说明</strong>
+            <button type="button" class="user-doc-close" id="userDocClose" title="关闭">&times;</button>
+          </div>
+          <div class="user-doc-body">
+            <h4>产品交叉比率</h4>
+            <p>含税毛利额 ÷ ((期初含税库存金额 + 期末含税库存金额) ÷ 2)</p>
+            <h4>售罄率</h4>
+            <p>正价/非正价判断（小票-单品级别）：综合折扣率 ≥ 输入的正价折扣判断为正价；综合折扣率 &lt; 输入的正价折扣判断为非正价。</p>
+            <p>示例：正价折扣输入 85%，某小票商品综合折扣率 80% 为非正价，90% 为正价。</p>
+            <p>正价平均折扣 = 正价商品 (销售收入 - 用券金额 - 用积分金额) ÷ 售价金额</p>
+            <p>售罄率 = 含税销售成本 ÷ (含税销售成本 + 含税期末库存金额)</p>
+            <p>正价售罄率 = 正价商品含税销售成本 ÷ (全部商品含税销售成本 + 含税期末库存金额)</p>
+            <p>正价销售占比 = 正价商品销售收入 ÷ 整体销售收入</p>
+            <p>正价毛利占比 = 正价商品含税毛利额 ÷ 整体含税毛利额</p>
+            <p>非正价同上</p>
+            <h4>动销率</h4>
+            <p>SKU动销率 = 有销售SKU数量 ÷ (有销售SKU数量 + 未销售且期末库存不为零的SKU数量)</p>
+            <p>动销SKU数量 = 有销售的SKU数量</p>
+            <p>非动销SKU数量 = 未销售且期末库存不为零的SKU数量</p>
+            <p>动销库存占比 = 动销商品期末含税库存金额 ÷ 整体期末含税库存金额</p>
+            <p>非动销库存占比 = 非动销商品期末含税库存金额 ÷ 整体期末含税库存金额</p>
+            <p>判断标准：有交易即算动销，退货也算动销。</p>
+            <h4>毛利/销售区间</h4>
+            <p>将某维度下的 SKU 按销售收入（销售额区间）或含税毛利额（毛利额区间）从高到低排序，按 5/10/20 段分桶，百分比边界左开右闭，例如 0%-20%、20%-40%、40%-60%、60%-80%、80%-100%。</p>
+            <p>品牌数量 = 区间维度+叠加维度下品牌去重计数</p>
+            <p>品牌数量占比 = 区间维度+叠加维度品牌去重计数 ÷ 叠加维度品牌去重计数</p>
+            <p>SKU数量 = 区间维度+叠加维度下商品去重计数</p>
+            <p>SKU数量占比 = 区间维度+叠加维度商品去重计数 ÷ 叠加维度商品去重计数</p>
+            <p>销售占比 = 区间维度+叠加维度销售收入 ÷ 叠加维度销售收入</p>
+            <p>毛利占比 = 区间维度+叠加维度含税毛利额 ÷ 叠加维度含税毛利额</p>
+            <p>库存占比 = 区间维度+叠加维度期末含税库存金额 ÷ 叠加维度期末含税库存金额</p>
+            <h4>特殊说明</h4>
+            <ol>
+              <li>部分门店只有库存、没有销售，7063 仅含香化数据。</li>
+              <li>ERP门店 与旧上海/北京（上线 EOP 前，CDFBJ/CDFBJHL/CDFSHHQ/CDFSHPD/CDFSHHL/RSSH）没有用券金额、用积分金额，相关计算按 0 处理。</li>
+              <li>ZMGJHYG 只有销售，无库存/成本，相关指标显示为空或 0。</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <div class="pagination-right">
+        <span class="total">共 <b id="totalCount">0</b> 条</span>
+        <select class="page-size" id="pageSizeSelect">
+          <option value="10">10条/页</option>
+          <option value="30" selected>30条/页</option>
+          <option value="50">50条/页</option>
+        </select>
+        <button class="page-btn" id="prevBtn">&lt;</button>
+        <div class="page-numbers" id="pageNumbers"></div>
+        <button class="page-btn" id="nextBtn">&gt;</button>
+        <span class="go">前往 <input type="number" id="goInput" min="1" value="1"> 页</span>
+        <button class="btn small" id="goBtn">跳转</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<aside class="dev-panel collapsed" id="devPanel">
+  <div class="dev-panel-head">
+    <strong>开发版逻辑</strong>
+    <button type="button" class="dev-close" id="devPanelToggle" title="收起/展开"><i class="fa-solid fa-angles-right"></i></button>
+  </div>
+  <div class="dev-panel-body" id="devPanelBody"></div>
+  <button type="button" class="dev-reopen" id="devPanelReopen" title="展开开发版逻辑"><i class="fa-solid fa-angles-left"></i></button>
+</aside>
+
+<script type="text/markdown" id="devDocMd">
+# 开发版逻辑
+
+## 一、筛选项与列表交互
+
+- 分析维度增加：**毛利额区间**、**销售额区间**
+- 分析维度 = 毛利额区间 / 销售额区间：
+  - 首列为对应区间
+  - 叠加维度不可选单品
+  - 叠加维度 = 品牌时，列表隐藏 **品牌数量**、**品牌数量占比**
+  - 隐藏字段：购物人数、票数、客单价、件单价、连带率
+  - 列表增加：品牌数量、品牌数量占比、SKU数量、SKU数量占比、销售占比、毛利占比、库存占比
+- 效率指标：下拉单选，枚举值（产品交叉比率 / 售罄率 / 动销率），默认为空；分析维度为毛利额区间 / 销售额区间时禁用，分析维度/叠加维度 为单品时，“动销率”不可选。
+  - 产品交叉比率 → 列表增加 **产品交叉比率**
+  - 售罄率 → 列表增加 正价平均折扣、非正价平均折扣、售罄率、正价售罄率、非正价售罄率、正价销售占比、非正价销售占比、正价毛利占比、非正价毛利占比
+  - 动销率 → 列表增加 SKU动销率、动销SKU数量、非动销SKU数量、动销库存占比、非动销库存占比
+- 正价折扣：数值输入框，单位 %，必填，默认 85%；默认禁用，仅效率指标选择“售罄率”时启用
+- 毛利区间分段：下拉单选，枚举值（5/10/20），默认 5；默认禁用，仅分析维度选择“毛利额区间”时启用
+- 销售区间分段：下拉单选，枚举值（5/10/20），默认 5；默认不展示，仅分析维度选择“销售额区间”时替代毛利区间分段
+- 毛利率区间：数值输入框，单位 %；默认禁用，分析维度为毛利额区间或销售额区间时启用
+- 筛选项顺序调整：如图所示
+
+## 二、指标逻辑
+
+1. **产品交叉比率**：含税毛利额 ÷ ((期初含税库存金额 + 期末含税库存金额) ÷ 2)
+2. **售罄率**
+   - 正价/非正价判断（小票-单品级别）：综合折扣率 ≥ 输入的正价折扣判断为正价；综合折扣率 &lt; 输入的正价折扣判断为非正价
+   - 综合折扣率 = (销售收入 - 用券金额 - 用积分金额) ÷ 售价金额
+   - 示例：正价折扣输入 85%，综合折扣率 80% 为非正价，90% 为正价
+   - 正价平均折扣 = 正价商品 (销售收入 - 用券金额 - 用积分金额) ÷ 售价金额
+   - 售罄率 = 含税销售成本 ÷ (含税销售成本 + 含税期末库存金额)
+   - 正价售罄率 = 正价商品含税销售成本 ÷ (全部商品含税销售成本 + 含税期末库存金额)
+   - 正价销售占比 = 正价商品销售收入 ÷ 整体销售收入
+   - 正价毛利占比 = 正价商品含税毛利额 ÷ 整体含税毛利额
+   - 非正价同上
+3. **动销率**
+   - 判断标准：有交易即算动销，退货也算动销
+   - SKU动销率 = 有销售SKU数量 ÷ (有销售SKU数量 + 未销售且期末库存不为零的SKU数量)
+   - 动销SKU数量 = 有销售的SKU数量
+   - 非动销SKU数量 = 未销售且期末库存不为零的SKU数量
+   - 动销库存占比 = 动销商品期末含税库存金额 ÷ 整体期末含税库存金额
+   - 非动销库存占比 = 非动销商品期末含税库存金额 ÷ 整体期末含税库存金额
+4. **毛利/销售区间**
+   - 将某维度下的 SKU 按销售收入（销售额区间）或含税毛利额（毛利额区间）从高到低排序
+   - 按 5/10/20 段分桶，百分比边界左开右闭，例如 0%-20%、20%-40%、40%-60%、60%-80%、80%-100%
+   - 品牌数量 = 区间维度 + 叠加维度下品牌去重计数
+   - 品牌数量占比 = 区间维度 + 叠加维度品牌去重计数 ÷ 叠加维度品牌去重计数
+   - SKU数量 = 区间维度 + 叠加维度下商品去重计数
+   - SKU数量占比 = 区间维度 + 叠加维度商品去重计数 ÷ 叠加维度商品去重计数
+   - 销售占比 = 区间维度 + 叠加维度销售收入 ÷ 叠加维度销售收入
+   - 毛利占比 = 区间维度 + 叠加维度含税毛利额 ÷ 叠加维度含税毛利额
+   - 库存占比 = 区间维度 + 叠加维度期末含税库存金额 ÷ 叠加维度期末含税库存金额
+
+## 三、特殊数据口径
+
+- ERP门店与旧上海/北京（上线 EOP 前）无用券金额、用积分金额，按空 / 0 处理
+- ZMGJHYG 只有销售，无库存、无成本，相关指标为空或 0
+- 效率指标为空或分析维度不为“毛利额区间”/“销售额区间”时，剔除只有库存、无销售的行
+- 部分门店只有库存、没有销售，7063 仅含香化数据
+
+</script>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+
+  const ANALYSIS_DIMS = [
+    '品牌','单品','柜组','门店','控制分类','内部小类','商品新分类','财务分类','供应商集团',
+    '商品类目','业务品类','业务模式','毛利额区间','销售额区间','商品大类(海南)','SKC(精品)','团队(精品)'
+  ];
+  const OVERLAY_DIMS = [
+    '品牌','单品','柜组','门店','控制分类','内部小类','商品新分类','财务分类','供应商集团',
+    '商品类目','业务品类','业务模式','商品大类(海南)','SKC(精品)','团队(精品)'
+  ];
+  const SINGLE_OVERLAY_ALLOW = [
+    '柜组','门店','控制分类','商品新分类','财务分类','供应商集团','商品类目','业务品类',
+    '业务模式','SKC(精品)','团队(精品)'
+  ];
+
+  const COMMON_FIELDS = [
+    {label:'售价金额', type:'money'},
+    {label:'销售收入', type:'money'},
+    {label:'营业收入', type:'money'},
+    {label:'免税营收(海南)', type:'money'},
+    {label:'总折扣', type:'money'},
+    {label:'成本金额', type:'money'},
+    {label:'折扣率', type:'percent'},
+    {label:'业务毛利', type:'money'},
+    {label:'业务毛利率', type:'percent'},
+    {label:'实际毛利', type:'money'},
+    {label:'实际毛利率', type:'percent'},
+    {label:'净毛利', type:'money'},
+    {label:'净毛利率', type:'percent'},
+    {label:'用券金额', type:'money'},
+    {label:'抖音券优惠金额(海南)', type:'money'},
+    {label:'用积分金额', type:'money'},
+    {label:'积分补款', type:'money'},
+    {label:'购物人数', type:'int'},
+    {label:'客单价', type:'money'},
+    {label:'票数', type:'int'},
+    {label:'件单价', type:'money'},
+    {label:'销售数量', type:'int'},
+    {label:'连带率', type:'decimal'},
+    {label:'销售收入占比', type:'percent'},
+    {label:'基础等级赠送积分', type:'int'},
+    {label:'倍数营销赠送积分', type:'int'},
+    {label:'满返营销赠送积分', type:'int'},
+    {label:'赠送积分总额', type:'int'}
+  ];
+
+  const EXTRA_INTERVAL_FIELDS = [
+    {label:'品牌数量', type:'int'},
+    {label:'品牌数量占比', type:'percent'},
+    {label:'SKU数量', type:'int'},
+    {label:'SKU数量占比', type:'percent'},
+    {label:'销售占比', type:'percent'},
+    {label:'毛利占比', type:'percent'},
+    {label:'库存占比', type:'percent'}
+  ];
+
+  const EFFICIENCY_FIELDS = {
+    '产品交叉比率': [{label:'产品交叉比率', type:'percent'}],
+    '售罄率': [
+      {label:'正价平均折扣', type:'percent'},
+      {label:'非正价平均折扣', type:'percent'},
+      {label:'售罄率', type:'percent'},
+      {label:'正价售罄率', type:'percent'},
+      {label:'非正价售罄率', type:'percent'},
+      {label:'正价销售占比', type:'percent'},
+      {label:'非正价销售占比', type:'percent'},
+      {label:'正价毛利占比', type:'percent'},
+      {label:'非正价毛利占比', type:'percent'}
+    ],
+    '动销率': [
+      {label:'SKU动销率', type:'percent'},
+      {label:'动销SKU数量', type:'int'},
+      {label:'非动销SKU数量', type:'int'},
+      {label:'动销库存占比', type:'percent'},
+      {label:'非动销库存占比', type:'percent'}
+    ]
+  };
+
+  const CHANNEL_OPTIONS = ['国内-海南','国内非海南','海外','日上','前海','其他'];
+  const STORE_OPTIONS = [
+    '[0704]防城港市中免免税店有限责任公司',
+    '[0759]青岛口岸免税店',
+    '[0816]威海中免免税品有限责任公司',
+    '[0818]海南海航中免免税品有限公司_美兰机场店',
+    '[0819]海南海航中免免税品有限公司_三亚机场店',
+    '[200001]中国免税品（集团）有限责任公司（本部）',
+    '[201001]中免国际有限公司',
+    '[202037]中免集团（海南）运营总部有限公司'
+  ];
+  const CONTROL_OPTIONS = [
+    '[01]首饰','[02]工艺品','[03]手表','[04]香水','[05]化妆品','[06]笔','[07]眼镜','[08]丝巾','[09]领带',
+    '[10]毛织品','[11]棉织品','[12]服装服饰','[13]鞋帽','[14]皮带','[15]箱包','[16]小皮件','[17]糖果',
+    '[18]体育用品','[19]美容及保健器材','[20]餐具及厨房用品','[21]玩具（含童车）','[22]婴儿配方奶粉及辅食',
+    '[23]咖啡','[24]参制品','[25]谷物食品','[26]保健食品','[27]蜂王浆制剂','[28]橄榄油','[29]尿不湿',
+    '[30]陶瓷制品','[31]玻璃制品','[32]小家电','[33]小家电配件','[34]家用小五金','[35]钟','[36]转换插头',
+    '[37]表带、表链','[38]眼镜片、眼镜框','[39]一、二类家用医疗器械','[40]康复医疗器械','[41]天然蜂蜜等',
+    '[42]茶、马黛茶及其制品','[43]平板电脑及微型机','[44]电子消费产品','[45]手机','[46]电子游戏机',
+    '[47]酒类','[48]宠物用品','[49]可随身携带的乐器','[50]微型无人机'
+  ];
+  const INTERNAL_CATEGORY_OPTIONS = [
+    '[01]进口酒','[02]进口烟','[03]进口香化','[04]国产酒','[05]国产烟','[06]进口精品','[07]进口食品',
+    '[08]代理品牌商品','[09]有税国产品','[10]奥运产品','[11]退税国产品','[12]船供商品','[14]统购有税精品',
+    '[15]退税精品','[16]统购有税','[19]有税进口酒','[20]退税商品','[21]农产品','[22]海南免税',
+    '[23]海口自采有税','[24]海口自采有税','[25]有税国产酒','[26]免值品','[27]自有品牌','[28]电商一件代发'
+  ];
+
+  const POOL = {
+    '品牌': ['兰蔻','雅诗兰黛','SK-II','迪奥','香奈儿','海蓝之谜','娇兰','资生堂'],
+    '柜组': ['护肤A柜组','彩妆B柜组','香氛C柜组','酒水D柜组','食品E柜组'],
+    '门店': STORE_OPTIONS,
+    '控制分类': CONTROL_OPTIONS,
+    '内部小类': INTERNAL_CATEGORY_OPTIONS,
+    '商品新分类': ['护肤新品','彩妆新品','香氛新品','食品新品','酒水新品'],
+    '财务分类': ['自营','联营','租赁','代销'],
+    '供应商集团': ['LVMH集团','欧莱雅集团','雅诗兰黛集团','资生堂集团','宝洁集团','联合利华集团'],
+    '商品类目': ['美妆','香化','酒水','食品','服饰','珠宝'],
+    '业务品类': ['护肤','彩妆','香水','保健食品','酒类','珠宝','腕表'],
+    '业务模式': ['自营','联营','平台','代销'],
+    '商品大类(海南)': ['美妆个护','香化精品','酒水饮料','食品保健','时尚服饰','钟表珠宝'],
+    'SKC(精品)': ['SKC-1001','SKC-1002','SKC-2003','SKC-3004','SKC-4005'],
+    '团队(精品)': ['精品一队','精品二队','精品三队','精品四队']
+  };
+
+  const PRODUCT_NAMES = [
+    '兰蔻小黑瓶精华肌底液 50ml','雅诗兰黛小棕瓶精华露 75ml','SK-II 神仙水精华 230ml',
+    '迪奥真我浓香水 50ml','香奈儿五号香水 100ml','海蓝之谜精华面霜 60ml',
+    '娇兰复原蜜精华 30ml','资生堂红腰子精华 75ml'
+  ];
+  const CATEGORIES = ['护肤品','彩妆','香水','食品','酒水'];
+  const SMALL_CLASSES = INTERNAL_CATEGORY_OPTIONS;
+  const MID_CLASSES = ['精华类','面霜类','水乳类','彩妆类','香水类','食品类'];
+  const BIG_CLASSES = ['美妆护肤','彩妆香氛','食品保健','酒水饮料'];
+
+  const analysisSelect = $('#analysisDim');
+  const overlaySelect = $('#overlayDim');
+  const efficiencySelect = $('#efficiencySelect');
+  const segmentSelect = $('#segmentSelect');
+  const segmentLabel = $('#segmentLabel');
+  const grossMin = $('#grossMin');
+  const grossMax = $('#grossMax');
+  const filterDiscount = $('#filterDiscount');
+  const segmentSelectSale = $('#segmentSelectSale');
+  const userDocPanel = $('#userDocPanel');
+  const docToggle = $('#docToggle');
+  const userDocClose = $('#userDocClose');
+  const devPanel = $('#devPanel');
+  const devPanelToggle = $('#devPanelToggle');
+  const devPanelBody = $('#devPanelBody');
+  const devPanelReopen = $('#devPanelReopen');
+  const tableWrap = $('#tableWrap');
+  const dataTable = $('#dataTable');
+  const totalCount = $('#totalCount');
+  const pageSizeSelect = $('#pageSizeSelect');
+  const prevBtn = $('#prevBtn');
+  const nextBtn = $('#nextBtn');
+  const pageNumbers = $('#pageNumbers');
+  const goInput = $('#goInput');
+  const goBtn = $('#goBtn');
+
+  let currentData = [];
+  let page = 1;
+  let pageSize = 30;
+
+  const randInt = (min,max) => Math.floor(Math.random()*(max-min+1))+min;
+  const rand = (min,max,dec=2) => +(min+Math.random()*(max-min)).toFixed(dec);
+  const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+  const round2 = n => Math.round((n+Number.EPSILON)*100)/100;
+  const isIntervalDim = d => d === '毛利额区间' || d === '销售额区间';
+
+  const CHANGED_HEADERS = new Set([
+    '毛利额区间','销售额区间','产品交叉比率',
+    '正价平均折扣','非正价平均折扣','售罄率','正价售罄率','非正价售罄率',
+    '正价销售占比','非正价销售占比','正价毛利占比','非正价毛利占比',
+    '品牌数量','品牌数量占比','SKU数量','SKU数量占比','销售占比','毛利占比','库存占比',
+    'SKU动销率','动销SKU数量','非动销SKU数量','动销库存占比','非动销库存占比'
+  ]);
+
+  function fillAnalysisOptions(){
+    analysisSelect.innerHTML = ANALYSIS_DIMS.map(d => {
+      const red = d === '毛利额区间' || d === '销售额区间';
+      return `<option value="${d}"${red ? ' class="red"' : ''}>${d}</option>`;
+    }).join('');
+    analysisSelect.value = '品牌';
+  }
+
+  const mselUpdaters = {};
+  function initMultiSelects(){
+    const defs = [
+      ['mselChannel', CHANNEL_OPTIONS],
+      ['mselStore', STORE_OPTIONS],
+      ['mselControl', CONTROL_OPTIONS],
+      ['mselInternal', INTERNAL_CATEGORY_OPTIONS]
+    ];
+    defs.forEach(([id, options]) => {
+      const root = document.getElementById(id);
+      const trigger = root.querySelector('.msel-trigger');
+      const label = root.querySelector('.msel-label');
+      const panel = root.querySelector('.msel-panel');
+      const list = root.querySelector('.msel-list');
+      const allBox = root.querySelector('.msel-all');
+      const clearBtn = root.querySelector('.msel-clear');
+      list.innerHTML = options.map(o => `<label class="msel-opt"><input type="checkbox" class="msel-check" value="${o}" checked><span>${o}</span></label>`).join('');
+      const update = () => {
+        const checks = [...list.querySelectorAll('.msel-check')];
+        const n = checks.filter(c => c.checked).length;
+        allBox.checked = n === checks.length;
+        allBox.indeterminate = n > 0 && n < checks.length;
+        label.textContent = n === 0 ? '请选择' : (n === checks.length ? '全部' : `已选 ${n} 项`);
+      };
+      trigger.addEventListener('click', e => {
+        e.stopPropagation();
+        const isOpen = root.classList.contains('open');
+        document.querySelectorAll('.msel.open').forEach(m => m.classList.remove('open'));
+        if (!isOpen) root.classList.add('open');
+      });
+      panel.addEventListener('click', e => e.stopPropagation());
+      allBox.addEventListener('change', () => {
+        list.querySelectorAll('.msel-check').forEach(c => c.checked = allBox.checked);
+        update();
+      });
+      clearBtn.addEventListener('click', () => {
+        list.querySelectorAll('.msel-check').forEach(c => c.checked = false);
+        update();
+      });
+      list.addEventListener('change', update);
+      mselUpdaters[id] = update;
+      update();
+    });
+    document.addEventListener('click', () => document.querySelectorAll('.msel.open').forEach(m => m.classList.remove('open')));
+  }
+
+  function getMulti(id){
+    return [...document.querySelectorAll(`#${id} .msel-check:checked`)].map(c => c.value);
+  }
+
+  function resetMultiSelect(id){
+    document.querySelectorAll(`#${id} .msel-check`).forEach(c => c.checked = true);
+    mselUpdaters[id]();
+  }
+
+  const dprInstances = {};
+  function parseYmd(s){
+    const [y,m,d] = s.split('-').map(Number);
+    return new Date(y, m-1, d);
+  }
+  function fmtYmd(d){
+    const p = n => String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+  }
+  function initDateRangePickers(){
+    [
+      {id:'dprSale', start:'2026-07-01', end:'2026-07-31'},
+      {id:'dprCompare', start:'2026-06-01', end:'2026-06-30'}
+    ].forEach(cfg => {
+      const root = document.getElementById(cfg.id);
+      const trigger = root.querySelector('.dpr-trigger');
+      const label = root.querySelector('.dpr-label');
+      const panel = root.querySelector('.dpr-panel');
+      const monthEl = root.querySelector('.dpr-month');
+      const daysEl = root.querySelector('.dpr-days');
+      const prevBtn = root.querySelector('.dpr-prev');
+      const nextBtn = root.querySelector('.dpr-next');
+      const clearBtn = root.querySelector('.dpr-clear');
+      const todayBtn = root.querySelector('.dpr-today');
+      let start = parseYmd(cfg.start);
+      let end = parseYmd(cfg.end);
+      let view = new Date(start.getFullYear(), start.getMonth(), 1);
+
+      function render(){
+        monthEl.textContent = `${view.getFullYear()}年${view.getMonth()+1}月`;
+        const first = new Date(view.getFullYear(), view.getMonth(), 1);
+        const dow = first.getDay();
+        const daysInMonth = new Date(view.getFullYear(), view.getMonth()+1, 0).getDate();
+        let html = '';
+        for (let i=0;i<dow;i++) html += '<span class="dpr-empty"></span>';
+        for (let d=1;d<=daysInMonth;d++){
+          const date = new Date(view.getFullYear(), view.getMonth(), d);
+          const t = date.getTime();
+          let cls = 'dpr-day';
+          if (start && end && t >= start.getTime() && t <= end.getTime()) cls += ' in-range';
+          if (start && t === start.getTime()) cls += ' start';
+          if (end && t === end.getTime()) cls += ' end';
+          html += `<button type="button" class="${cls}" data-date="${fmtYmd(date)}">${d}</button>`;
+        }
+        daysEl.innerHTML = html;
+      }
+      function update(){
+        label.textContent = start && end ? `${fmtYmd(start)} ~ ${fmtYmd(end)}` : (start ? `${fmtYmd(start)} ~` : '请选择日期');
+      }
+      trigger.addEventListener('click', e => {
+        e.stopPropagation();
+        const isOpen = root.classList.contains('open');
+        document.querySelectorAll('.dpr.open').forEach(m => m.classList.remove('open'));
+        if (!isOpen) root.classList.add('open');
+      });
+      panel.addEventListener('click', e => e.stopPropagation());
+      prevBtn.addEventListener('click', () => { view = new Date(view.getFullYear(), view.getMonth()-1, 1); render(); });
+      nextBtn.addEventListener('click', () => { view = new Date(view.getFullYear(), view.getMonth()+1, 1); render(); });
+      daysEl.addEventListener('click', e => {
+        const btn = e.target.closest('.dpr-day');
+        if (!btn) return;
+        const d = parseYmd(btn.dataset.date);
+        if (!start || (start && end)) {
+          start = d; end = null;
+        } else if (d.getTime() < start.getTime()) {
+          start = d;
+        } else {
+          end = d;
+        }
+        update();
+        render();
+      });
+      clearBtn.addEventListener('click', () => { start = null; end = null; update(); render(); });
+      todayBtn.addEventListener('click', () => {
+        const t = new Date();
+        t.setHours(0,0,0,0);
+        start = t; end = t; update(); render();
+      });
+      dprInstances[cfg.id] = {
+        reset(){ start = parseYmd(cfg.start); end = parseYmd(cfg.end); update(); render(); },
+        get(){ return {start: start ? fmtYmd(start) : '', end: end ? fmtYmd(end) : ''}; }
+      };
+      update();
+      render();
+    });
+    document.addEventListener('click', () => document.querySelectorAll('.dpr.open').forEach(m => m.classList.remove('open')));
+  }
+
+  function overlayOptionsFor(analysis){
+    let base = OVERLAY_DIMS.slice();
+    if (analysis === '单品') {
+      base = base.filter(d => SINGLE_OVERLAY_ALLOW.includes(d));
+    } else if (isIntervalDim(analysis)) {
+      base = base.filter(d => d !== '单品');
+    }
+    return base.filter(d => d !== analysis);
+  }
+
+  function rebuildOverlayOptions(){
+    const analysis = analysisSelect.value;
+    const opts = overlayOptionsFor(analysis);
+    const current = overlaySelect.value;
+    overlaySelect.innerHTML = '<option value="">不叠加</option>' + opts.map(d => `<option value="${d}">${d}</option>`).join('');
+    overlaySelect.value = opts.includes(current) ? current : '';
+  }
+
+  function buildColumns(){
+    const analysis = analysisSelect.value;
+    const overlay = overlaySelect.value;
+    const eff = efficiencySelect.value;
+    const interval = isIntervalDim(analysis);
+    const cols = [];
+    const common = COMMON_FIELDS.map(f => Object.assign({}, f));
+    const effCols = EFFICIENCY_FIELDS[eff] ? EFFICIENCY_FIELDS[eff].map(f => Object.assign({}, f)) : [];
+
+    if (analysis === '单品') {
+      cols.push({key:'商品编码', label:'商品编码', type:'text'});
+      if (overlay) cols.push({key:'叠加', label:overlay, type:'text'});
+      cols.push({key:'商品名称', label:'商品名称', type:'text'});
+      cols.push({key:'类别', label:'类别', type:'text'});
+      cols.push({key:'内部小类', label:'内部小类', type:'text'});
+      cols.push({key:'内部中类', label:'内部中类', type:'text'});
+      cols.push({key:'内部大类', label:'内部大类', type:'text'});
+      cols.push({key:'品牌', label:'品牌', type:'text'});
+      cols.push({key:'商品大类', label:'商品大类', type:'text'});
+      cols.push(...common);
+      if (!interval && effCols.length) cols.push(...effCols);
+    } else if (interval) {
+      cols.push({key:analysis, label:analysis, type:'text'});
+      if (overlay) cols.push({key:'叠加', label:overlay, type:'text'});
+      cols.push(...common.filter(f => !['购物人数','票数','客单价','件单价','连带率'].includes(f.label)));
+      cols.push(...EXTRA_INTERVAL_FIELDS
+        .filter(f => !(overlay === '品牌' && (f.label === '品牌数量' || f.label === '品牌数量占比')))
+        .map(f => Object.assign({}, f)));
+    } else {
+      cols.push({key:analysis, label:analysis, type:'text'});
+      if (overlay) cols.push({key:'叠加', label:overlay, type:'text'});
+      cols.push(...common);
+      if (effCols.length) cols.push(...effCols);
+    }
+    return cols;
+  }
+
+  function intervalLabels(){
+    const analysis = analysisSelect.value;
+    const sel = analysis === '销售额区间' ? segmentSelectSale : segmentSelect;
+    const seg = parseFloat(sel.value) || 5;
+    const step = 100 / seg;
+    const labels = [];
+    for (let i=0;i<seg;i++){
+      const lo = step*i;
+      const hi = step*(i+1);
+      labels.push(lo === 0 ? `0-${hi}%` : `${lo}%-${hi}%`);
+    }
+    return labels;
+  }
+
+  function dimPool(dim){
+    const selectedStores = getMulti('mselStore');
+    const selectedControls = getMulti('mselControl');
+    if (dim === '品牌' && $('#filterBrand').value !== '全部') return [$('#filterBrand').value];
+    if (dim === '门店' && selectedStores.length) return selectedStores;
+    if (dim === '控制分类' && selectedControls.length) return selectedControls;
+    return POOL[dim] || [dim];
+  }
+
+  function generateRow(index, labels){
+    const analysis = analysisSelect.value;
+    const overlay = overlaySelect.value;
+    const interval = isIntervalDim(analysis);
+    const row = {};
+    let bucketIdx = -1;
+
+    if (interval) {
+      bucketIdx = randInt(0, labels.length-1);
+      row[analysis] = labels[bucketIdx];
+    } else if (analysis === '单品') {
+      row['商品编码'] = 'SP' + (202607000 + index + 1);
+      row['商品名称'] = pick(PRODUCT_NAMES);
+      row['类别'] = pick(CATEGORIES);
+      row['内部小类'] = pick(SMALL_CLASSES);
+      row['内部中类'] = pick(MID_CLASSES);
+      row['内部大类'] = pick(BIG_CLASSES);
+      row['品牌'] = pick(dimPool('品牌'));
+      row['商品大类'] = pick(POOL['商品大类(海南)']);
+    } else {
+      row[analysis] = pick(dimPool(analysis));
+    }
+    if (overlay) row['叠加'] = pick(POOL[overlay] || [overlay]);
+
+    const scale = bucketIdx >= 0 ? 0.5 + bucketIdx*0.45 : 1;
+    const hasSales = Math.random() > 0.15;
+    row['_hasSales'] = hasSales;
+    row['_inventoryStart'] = rand(2000, 1500000, 2);
+    row['_inventoryEnd'] = rand(3000, 2000000, 2);
+    const qty = hasSales ? Math.max(1, Math.round(randInt(1,600)*scale)) : 0;
+    const unitPrice = hasSales ? rand(20,9000,2) * (bucketIdx >= 0 ? rand(1,3) : 1) : 0;
+    const saleAmount = round2(qty*unitPrice);
+    const discountRate = hasSales ? rand(0.03,0.3) : 0;
+    const totalDiscount = round2(saleAmount*discountRate);
+    const salesRevenue = round2(saleAmount - totalDiscount);
+    const operatingRevenue = round2(salesRevenue*rand(0.92,1));
+    const taxFreeRevenue = round2(operatingRevenue*rand(0.05,0.85));
+    const cost = hasSales ? round2(saleAmount*rand(0.3,0.65)) : 0;
+    const bizProfit = round2(salesRevenue - cost);
+    const couponAmount = round2(salesRevenue*rand(0,0.06));
+    const douyinCoupon = round2(salesRevenue*rand(0,0.04));
+    const pointsUsed = hasSales ? randInt(0, Math.max(1, Math.round(salesRevenue/25))) : 0;
+    const pointsRefund = hasSales ? randInt(0, Math.max(1, Math.round(salesRevenue/80))) : 0;
+    const actualProfit = round2(Math.max(0, bizProfit - couponAmount - douyinCoupon*0.5 - pointsUsed*0.01 + pointsRefund));
+    const netProfit = round2(actualProfit*rand(0.86,0.99));
+    const customers = hasSales ? randInt(1,220) : 0;
+    const tickets = hasSales ? randInt(1, Math.max(1, Math.round(customers*rand(0.7,1.2)))) : 0;
+
+    row['售价金额'] = saleAmount;
+    row['销售收入'] = salesRevenue;
+    row['营业收入'] = operatingRevenue;
+    row['免税营收(海南)'] = taxFreeRevenue;
+    row['总折扣'] = totalDiscount;
+    row['成本金额'] = cost;
+    row['折扣率'] = round2(discountRate*100);
+    row['业务毛利'] = bizProfit;
+    row['业务毛利率'] = round2(salesRevenue > 0 ? bizProfit/salesRevenue*100 : 0);
+    row['实际毛利'] = actualProfit;
+    row['实际毛利率'] = round2(salesRevenue > 0 ? actualProfit/salesRevenue*100 : 0);
+    row['净毛利'] = netProfit;
+    row['净毛利率'] = round2(salesRevenue > 0 ? netProfit/salesRevenue*100 : 0);
+    row['用券金额'] = couponAmount;
+    row['抖音券优惠金额(海南)'] = douyinCoupon;
+    row['用积分金额'] = pointsUsed;
+    row['积分补款'] = pointsRefund;
+    row['购物人数'] = customers;
+    row['客单价'] = round2(salesRevenue/Math.max(1,customers));
+    row['票数'] = tickets;
+    row['件单价'] = round2(saleAmount/Math.max(1,qty));
+    row['销售数量'] = qty;
+    row['连带率'] = round2(qty/Math.max(1,tickets));
+    row['销售收入占比'] = rand(0.2,12);
+    row['基础等级赠送积分'] = randInt(0,8000);
+    row['倍数营销赠送积分'] = randInt(0,12000);
+    row['满返营销赠送积分'] = randInt(0,10000);
+    row['赠送积分总额'] = row['基础等级赠送积分'] + row['倍数营销赠送积分'] + row['满返营销赠送积分'];
+
+    if (interval) {
+      row['品牌数量'] = randInt(1,80);
+      row['品牌数量占比'] = rand(0.05,30);
+      row['SKU数量'] = randInt(1,600);
+      row['SKU数量占比'] = rand(0.05,30);
+      row['销售占比'] = rand(0.05,30);
+      row['毛利占比'] = rand(0.05,30);
+      row['库存占比'] = rand(0.05,30);
+    }
+    return row;
+  }
+
+  function refreshData(){
+    const count = randInt(20,30);
+    const labels = isIntervalDim(analysisSelect.value) ? intervalLabels() : [];
+    currentData = [];
+    for (let i=0;i<count;i++) currentData.push(generateRow(i, labels));
+    const eff = efficiencySelect.value;
+    if (eff === '产品交叉比率') {
+      currentData.forEach(row => {
+        const avg = (row['_inventoryStart'] + row['_inventoryEnd']) / 2;
+        row['产品交叉比率'] = avg > 0 ? round2(row['业务毛利'] / avg * 100) : 0;
+      });
+    } else if (eff === '售罄率') {
+      const threshold = parseFloat(filterDiscount.value) || 85;
+      currentData.forEach(row => {
+        const denom = row['售价金额'];
+        row['_discountRate'] = denom > 0 ? round2((row['销售收入'] - row['用券金额'] - row['用积分金额']) / denom * 100) : 0;
+        row['_isFullPrice'] = row['_discountRate'] >= threshold;
+        row['_sellOut'] = (row['成本金额'] + row['_inventoryEnd']) > 0 ? round2(row['成本金额'] / (row['成本金额'] + row['_inventoryEnd']) * 100) : 0;
+      });
+      const full = currentData.filter(r => r._isFullPrice);
+      const notFull = currentData.filter(r => !r._isFullPrice);
+      const avg = arr => arr.length ? arr.reduce((a, r) => a + r['_discountRate'], 0) / arr.length : 0;
+      const sumCost = arr => arr.reduce((a, r) => a + r['成本金额'], 0);
+      const sumRevenue = arr => arr.reduce((a, r) => a + r['销售收入'], 0);
+      const sumProfit = arr => arr.reduce((a, r) => a + r['业务毛利'], 0);
+      const totalCost = sumCost(currentData);
+      const baseCost = totalCost + currentData.reduce((a, r) => a + r['_inventoryEnd'], 0);
+      const totalRevenue = sumRevenue(currentData);
+      const totalProfit = sumProfit(currentData);
+      const fullDiscount = avg(full);
+      const notFullDiscount = avg(notFull);
+      currentData.forEach(row => {
+        row['正价平均折扣'] = round2(fullDiscount);
+        row['非正价平均折扣'] = round2(notFullDiscount);
+        row['售罄率'] = row['_sellOut'];
+        row['正价售罄率'] = baseCost > 0 ? round2((row._isFullPrice ? row['成本金额'] : 0) / baseCost * 100) : 0;
+        row['非正价售罄率'] = baseCost > 0 ? round2((row._isFullPrice ? 0 : row['成本金额']) / baseCost * 100) : 0;
+        row['正价销售占比'] = totalRevenue > 0 ? round2((row._isFullPrice ? row['销售收入'] : 0) / totalRevenue * 100) : 0;
+        row['非正价销售占比'] = totalRevenue > 0 ? round2((row._isFullPrice ? 0 : row['销售收入']) / totalRevenue * 100) : 0;
+        row['正价毛利占比'] = totalProfit > 0 ? round2((row._isFullPrice ? row['业务毛利'] : 0) / totalProfit * 100) : 0;
+        row['非正价毛利占比'] = totalProfit > 0 ? round2((row._isFullPrice ? 0 : row['业务毛利']) / totalProfit * 100) : 0;
+      });
+    } else if (eff === '动销率') {
+      const totalInv = currentData.reduce((a, r) => a + r['_inventoryEnd'], 0);
+      currentData.forEach(row => {
+        const sold = row._hasSales ? randInt(1, 200) : 0;
+        const unsold = row._hasSales ? randInt(0, 50) : randInt(1, 120);
+        const soldInv = row._hasSales ? row['_inventoryEnd'] * rand(0.1, 1) : 0;
+        row['动销SKU数量'] = sold;
+        row['非动销SKU数量'] = unsold;
+        row['SKU动销率'] = (sold + unsold) > 0 ? round2(sold / (sold + unsold) * 100) : 0;
+        row['动销库存占比'] = totalInv > 0 ? round2(soldInv / totalInv * 100) : 0;
+        row['非动销库存占比'] = totalInv > 0 ? round2(Math.max(0, 100 - row['动销库存占比'])) : 0;
+      });
+    }
+    page = 1;
+    renderTable();
+  }
+
+  function visibleRows(){
+    const interval = isIntervalDim(analysisSelect.value);
+    const eff = efficiencySelect.value;
+    if (!interval && !eff) return currentData.filter(r => r._hasSales);
+    return currentData;
+  }
+
+  function formatCell(value, type){
+    if (value === null || value === undefined || value === '') return '';
+    if (type === 'money') return Number(value).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    if (type === 'percent') return Number(value).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '%';
+    if (type === 'int') return Number(value).toLocaleString('en-US');
+    if (type === 'decimal') return Number(value).toFixed(2);
+    return String(value);
+  }
+
+  function pageItems(pageCount){
+    if (pageCount <= 7) return Array.from({length:pageCount}, (_,i)=>i+1);
+    const set = new Set([1,2,pageCount-1,pageCount,page-1,page,page+1].filter(p => p>=1 && p<=pageCount));
+    const sorted = [...set].sort((a,b)=>a-b);
+    const out = [];
+    for (let i=0;i<sorted.length;i++){
+      if (i>0 && sorted[i]-sorted[i-1] > 1) out.push('...');
+      out.push(sorted[i]);
+    }
+    return out;
+  }
+
+  function renderTable(){
+    const cols = buildColumns();
+    const overlay = overlaySelect.value;
+    const stickyCount = overlay ? 2 : 1;
+    const pool = visibleRows();
+    const total = pool.length;
+    const pageCount = Math.max(1, Math.ceil(total/pageSize));
+    if (page > pageCount) page = pageCount;
+    const start = (page-1)*pageSize;
+    const slice = pool.slice(start, start+pageSize);
+
+    let html = '<thead><tr>';
+    cols.forEach((c,i)=>{
+      const sticky = i < stickyCount ? ` sticky sticky-${i+1}` : '';
+      const align = c.type === 'text' ? '' : ' num';
+      const changed = CHANGED_HEADERS.has(c.label) ? ' changed' : '';
+      html += `<th class="${sticky}${align}${changed}">${c.label}</th>`;
+    });
+    html += '</tr></thead><tbody>';
+    const totals = {};
+    cols.forEach((c, i) => {
+      if (c.type === 'text') {
+        totals[c.key] = i === 0 ? '合计' : '';
+      } else if (c.type === 'percent' || c.type === 'decimal') {
+        const vals = pool.map(r => Number(r[c.key])).filter(v => isFinite(v));
+        totals[c.key] = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+      } else {
+        totals[c.key] = pool.reduce((a, r) => a + (Number(r[c.key]) || 0), 0);
+      }
+    });
+    html += '<tr class="total-row">';
+    cols.forEach((c, i) => {
+      const sticky = i < stickyCount ? ` sticky sticky-${i+1}` : '';
+      const align = c.type === 'text' ? '' : ' num';
+      html += `<td class="${sticky}${align}">${formatCell(totals[c.key], c.type)}</td>`;
+    });
+    html += '</tr>';
+    slice.forEach(row=>{
+      html += '<tr>';
+      cols.forEach((c,i)=>{
+        const sticky = i < stickyCount ? ` sticky sticky-${i+1}` : '';
+        const align = c.type === 'text' ? '' : ' num';
+        html += `<td class="${sticky}${align}">${formatCell(row[c.key], c.type)}</td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody>';
+    dataTable.innerHTML = html;
+
+    totalCount.textContent = total;
+
+    prevBtn.disabled = page <= 1;
+    nextBtn.disabled = page >= pageCount;
+    pageNumbers.innerHTML = pageItems(pageCount).map(item => {
+      if (item === '...') return '<span class="page-ellipsis">…</span>';
+      return `<button class="page-num ${item === page ? 'active' : ''}" data-page="${item}">${item}</button>`;
+    }).join('');
+    goInput.max = pageCount;
+    goInput.value = page;
+  }
+
+  function updateControlStates(){
+    const interval = isIntervalDim(analysisSelect.value);
+    const isSale = analysisSelect.value === '销售额区间';
+    segmentSelect.disabled = !interval || isSale;
+    segmentSelectSale.disabled = !interval || !isSale;
+    segmentSelect.classList.toggle('hidden', isSale);
+    segmentSelectSale.classList.toggle('hidden', !isSale);
+    segmentLabel.textContent = isSale ? '销售区间分段' : '毛利区间分段';
+    grossMin.disabled = !interval;
+    grossMax.disabled = !interval;
+    efficiencySelect.disabled = interval;
+    const movementOpt = efficiencySelect.querySelector('option[value="动销率"]');
+    const disallowMovement = analysisSelect.value === '单品' || overlaySelect.value === '单品';
+    if (movementOpt) movementOpt.disabled = disallowMovement;
+    if (disallowMovement && efficiencySelect.value === '动销率') efficiencySelect.value = '';
+    filterDiscount.disabled = efficiencySelect.value !== '售罄率';
+  }
+
+  function onAnalysisChange(){
+    rebuildOverlayOptions();
+    updateControlStates();
+    refreshData();
+  }
+
+  function resetFilters(){
+    resetMultiSelect('mselChannel');
+    resetMultiSelect('mselStore');
+    resetMultiSelect('mselControl');
+    resetMultiSelect('mselInternal');
+    $('#filterCategory').value = '全部';
+    $('#filterBizMode').value = '全部';
+    $('#filterBizCategory').value = '全部';
+    $('#filterBrand').value = '全部';
+    $('#filterGoodsCode').value = '';
+    $('#priceMin').value = '';
+    $('#priceMax').value = '';
+    $('#filterDelivery').value = '全部';
+    $('#filterGoodsScope').value = '全部';
+    dprInstances['dprSale'].reset();
+    dprInstances['dprCompare'].reset();
+    $('#filterWeek').value = '星期一';
+    $('#filterIsland').value = '全部';
+    $('#filterOrderType').value = '全部';
+    $('#filterSaleChannel').value = '全部';
+    $('#filterCustomerSource').selectedIndex = 0;
+    $('#filterSupplier').value = '全部';
+    $('#filterDiscount').value = '85';
+    document.querySelector('input[name="currency"][value="人民币"]').checked = true;
+    document.querySelector('input[name="language"][value="中文"]').checked = true;
+    analysisSelect.value = '品牌';
+    segmentSelect.value = '5';
+    segmentSelectSale.value = '5';
+    efficiencySelect.value = '';
+    $('#grossMin').value = '';
+    $('#grossMax').value = '';
+    onAnalysisChange();
+  }
+
+  function exportCsv(){
+    const cols = buildColumns();
+    const head = cols.map(c => `"${c.label}"`).join(',');
+    const rows = visibleRows();
+    const lines = rows.map(row => cols.map(c => {
+      const v = formatCell(row[c.key], c.type);
+      return `"${String(v).replace(/"/g,'""')}"`;
+    }).join(','));
+    const csv = '\ufeff' + [head, ...lines].join('\r\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `销售分析_${analysisSelect.value}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function renderMarkdown(src){
+    const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const inline = s => esc(s)
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>');
+    const lines = src.replace(/\r/g,'').split('\n');
+    let html = '';
+    let lists = [];
+    const closeLists = () => { while (lists.length) html += `</${lists.pop()}>`; };
+    lines.forEach(raw => {
+      const line = raw.trim();
+      if (!line) { closeLists(); return; }
+      const h = line.match(/^(#{1,4})\s+(.*)$/);
+      if (h) {
+        closeLists();
+        const lv = h[1].length;
+        html += `<h${Math.min(4, lv + 2)}>${inline(h[2])}</h${Math.min(4, lv + 2)}>`;
+        return;
+      }
+      const indent = /^(\s*)/.exec(raw)[1].length;
+      const level = Math.floor(indent / 2);
+      const ul = line.match(/^[-*]\s+(.*)$/);
+      const ol = line.match(/^\d+\.\s+(.*)$/);
+      if (ul || ol) {
+        const type = ul ? 'ul' : 'ol';
+        while (lists.length > level + 1) html += `</${lists.pop()}>`;
+        if (lists.length <= level) { html += `<${type}>`; lists.push(type); }
+        else if (lists[level] !== type) { html += `</${lists.pop()}>`; html += `<${type}>`; lists.push(type); }
+        html += `<li>${inline(ul ? ul[1] : ol[1])}</li>`;
+        return;
+      }
+      closeLists();
+      html += `<p>${inline(line)}</p>`;
+    });
+    closeLists();
+    return html;
+  }
+
+  devPanelBody.innerHTML = renderMarkdown(document.getElementById('devDocMd').textContent);
+
+  initMultiSelects();
+  initDateRangePickers();
+  fillAnalysisOptions();
+  onAnalysisChange();
+
+  analysisSelect.addEventListener('change', onAnalysisChange);
+  overlaySelect.addEventListener('change', () => { updateControlStates(); refreshData(); });
+  efficiencySelect.addEventListener('change', () => { updateControlStates(); refreshData(); });
+  segmentSelect.addEventListener('change', refreshData);
+  segmentSelectSale.addEventListener('change', refreshData);
+  $('#queryBtn').addEventListener('click', refreshData);
+  $('#resetBtn').addEventListener('click', resetFilters);
+  $('#exportBtn').addEventListener('click', exportCsv);
+
+  docToggle.addEventListener('click', e => {
+    e.stopPropagation();
+    userDocPanel.classList.toggle('hidden');
+  });
+  userDocClose.addEventListener('click', () => userDocPanel.classList.add('hidden'));
+  userDocPanel.addEventListener('click', e => e.stopPropagation());
+  document.addEventListener('click', () => userDocPanel.classList.add('hidden'));
+
+  devPanelToggle.addEventListener('click', e => {
+    e.stopPropagation();
+    devPanel.classList.toggle('collapsed');
+    devPanelToggle.querySelector('i').className = devPanel.classList.contains('collapsed') ? 'fa-solid fa-angles-left' : 'fa-solid fa-angles-right';
+  });
+  devPanelReopen.addEventListener('click', () => {
+    devPanel.classList.remove('collapsed');
+    devPanelToggle.querySelector('i').className = 'fa-solid fa-angles-right';
+  });
+
+  pageSizeSelect.addEventListener('change', () => {
+    pageSize = +pageSizeSelect.value;
+    page = 1;
+    renderTable();
+  });
+  prevBtn.addEventListener('click', () => {
+    if (page > 1){ page--; renderTable(); }
+  });
+  nextBtn.addEventListener('click', () => {
+    const pageCount = Math.max(1, Math.ceil(visibleRows().length/pageSize));
+    if (page < pageCount){ page++; renderTable(); }
+  });
+  pageNumbers.addEventListener('click', e => {
+    const btn = e.target.closest('.page-num');
+    if (!btn) return;
+    page = +btn.dataset.page;
+    renderTable();
+  });
+  function goToPage(){
+    const target = Math.min(Math.max(1, +goInput.value || 1), Math.max(1, Math.ceil(visibleRows().length/pageSize)));
+    page = target;
+    renderTable();
+  }
+  goBtn.addEventListener('click', goToPage);
+  goInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') goToPage();
+  });
+})();
+</script>
+</body>
+</html>
