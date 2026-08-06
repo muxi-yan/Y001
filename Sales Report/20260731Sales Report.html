@@ -70,6 +70,7 @@
   .filter-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px 18px}
   .hidden{display:none!important}
   .form-item{display:flex;align-items:center;gap:8px;min-width:0}
+  .form-item.has-error{margin-bottom:18px}
   .form-label{flex:0 0 112px;text-align:right;font-size:12px;color:#55637c;white-space:nowrap}
   .form-label.changed{color:#e5484d;font-weight:600}
   .control{
@@ -87,6 +88,10 @@
   .input-unit span{
     position:absolute;right:8px;top:50%;transform:translateY(-50%);
     color:#8a97ad;font-size:12px;pointer-events:none;
+  }
+  .control.invalid{border-color:#e5484d;box-shadow:0 0 0 3px rgba(229,72,77,.12)}
+  .field-error{
+    position:absolute;top:34px;left:0;font-size:11px;color:#e5484d;white-space:nowrap;
   }
   .dpr{position:relative;width:100%;min-width:0}
   .dpr-trigger{
@@ -240,12 +245,19 @@
   .user-doc-body h4{margin:10px 0 4px;font-size:13px;color:#1d3358}
   .user-doc-body h4:first-child{margin-top:0}
   .user-doc-body p{margin:3px 0}
+  .user-doc-body ul{margin:4px 0 4px 18px;padding:0}
   .user-doc-body ol{margin:4px 0 4px 18px;padding:0}
 
+  .dev-float{
+    position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:70;
+    width:30px;padding:16px 0;border:none;border-radius:8px 0 0 8px;background:#1890ff;color:#fff;
+    font-size:12px;font-weight:600;cursor:pointer;writing-mode:vertical-rl;letter-spacing:2px;
+    box-shadow:-2px 2px 8px rgba(24,144,255,.28);
+  }
+  .dev-float:hover{background:#40a9ff}
   .dev-panel{
-    position:fixed;top:58px;right:0;bottom:0;width:420px;background:#fff;border-left:1px solid #d5e0ee;
+    position:fixed;right:0;top:58px;bottom:0;width:400px;background:#fff;border-left:1px solid #d5e0ee;
     box-shadow:-6px 0 24px rgba(20,45,90,.10);z-index:70;display:flex;flex-direction:column;
-    transition:width .2s;
   }
   .dev-panel-head{
     display:flex;align-items:center;justify-content:space-between;padding:10px 14px;
@@ -273,16 +285,6 @@
     background:#f2f6fb;border:1px solid #e0e8f4;border-radius:3px;padding:0 4px;
     font-size:11px;color:#1769d6;
   }
-  .dev-panel.collapsed{width:36px}
-  .dev-panel.collapsed .dev-panel-head,.dev-panel.collapsed .dev-panel-body{display:none}
-  .dev-reopen{
-    display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-    width:24px;height:42px;border:1px solid #d5e0ee;border-radius:6px;background:#f7fafd;color:#1890ff;
-    cursor:pointer;align-items:center;justify-content:center;font-size:12px;padding:0;
-  }
-  .dev-reopen:hover{border-color:#8fb0da;background:#eef5ff}
-  .dev-panel.collapsed .dev-reopen{display:flex}
-
   /* ===== 响应式 ===== */
   @media (max-width:1360px){.filter-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
   @media (max-width:1120px){
@@ -377,10 +379,8 @@
       <div class="form-item">
         <label class="form-label changed">效率指标</label>
         <select class="control" id="efficiencySelect">
-          <option value="" selected>请选择</option>
-          <option value="产品交叉比率">产品交叉比率</option>
-          <option value="售罄率">售罄率</option>
-          <option value="动销率">动销率</option>
+          <option value="" selected>不展示</option>
+          <option value="show">展示</option>
         </select>
       </div>
 
@@ -562,15 +562,19 @@
       <div class="form-item">
         <label class="form-label changed">毛利率区间</label>
         <div class="range-group">
-          <div class="input-unit"><input class="control" type="number" id="grossMin" placeholder="0" disabled><span>%</span></div>
+          <div class="input-unit"><input class="control" type="number" id="grossMin" placeholder="最小值" disabled><span>%</span></div>
           <span>至</span>
-          <div class="input-unit"><input class="control" type="number" id="grossMax" placeholder="100" disabled><span>%</span></div>
+          <div class="input-unit"><input class="control" type="number" id="grossMax" placeholder="最大值" disabled><span>%</span></div>
         </div>
       </div>
 
       <div class="form-item">
         <label class="form-label changed">正价折扣</label>
-        <div class="input-unit"><input class="control" type="number" id="filterDiscount" placeholder="请输入" value="85" disabled><span>%</span></div>
+        <div class="input-unit">
+          <input class="control" type="number" id="filterDiscount" placeholder="请输入" value="85" disabled>
+          <span>%</span>
+          <span class="field-error hidden" id="discountError">正价折扣不可为空</span>
+        </div>
       </div>
       <div class="form-item">
         <label class="form-label">提货方式</label>
@@ -665,23 +669,27 @@
             <h4>产品交叉比率</h4>
             <p>含税毛利额 ÷ ((期初含税库存金额 + 期末含税库存金额) ÷ 2)</p>
             <h4>售罄率</h4>
-            <p>正价/非正价判断（小票-单品级别）：综合折扣率 ≥ 输入的正价折扣判断为正价；综合折扣率 &lt; 输入的正价折扣判断为非正价。</p>
-            <p>示例：正价折扣输入 85%，某小票商品综合折扣率 80% 为非正价，90% 为正价。</p>
+            <p>正价/非正价判断（小票-单品级别）：</p>
+            <ul>
+              <li>综合折扣率 ≥ 输入的正价折扣，判断为正价</li>
+              <li>综合折扣率 &lt; 输入的正价折扣，判断为非正价</li>
+              <li>示例：正价折扣输入 85%，某小票商品综合折扣率 80% 为非正价，90% 为正价</li>
+            </ul>
             <p>正价平均折扣 = 正价商品 (销售收入 - 用券金额 - 用积分金额) ÷ 售价金额</p>
             <p>售罄率 = 含税销售成本 ÷ (含税销售成本 + 含税期末库存金额)</p>
             <p>正价售罄率 = 正价商品含税销售成本 ÷ (全部商品含税销售成本 + 含税期末库存金额)</p>
             <p>正价销售占比 = 正价商品销售收入 ÷ 整体销售收入</p>
             <p>正价毛利占比 = 正价商品含税毛利额 ÷ 整体含税毛利额</p>
-            <p>非正价同上</p>
+            <p>非正价平均折扣、非正价售罄率、非正价销售占比、非正价毛利占比，均按非正价商品口径计算</p>
             <h4>动销率</h4>
             <p>SKU动销率 = 有销售SKU数量 ÷ (有销售SKU数量 + 未销售且期末库存不为零的SKU数量)</p>
             <p>动销SKU数量 = 有销售的SKU数量</p>
             <p>非动销SKU数量 = 未销售且期末库存不为零的SKU数量</p>
             <p>动销库存占比 = 动销商品期末含税库存金额 ÷ 整体期末含税库存金额</p>
             <p>非动销库存占比 = 非动销商品期末含税库存金额 ÷ 整体期末含税库存金额</p>
-            <p>判断标准：有交易即算动销，退货也算动销。</p>
+            <p>判断标准：有交易即算动销，退货也算动销</p>
             <h4>毛利/销售区间</h4>
-            <p>将某维度下的 SKU 按销售收入（销售额区间）或含税毛利额（毛利额区间）从高到低排序，按 5/10/20 段分桶，百分比边界左开右闭，例如 0%-20%、20%-40%、40%-60%、60%-80%、80%-100%。</p>
+            <p>口径：将某维度下的 SKU 按销售收入（销售额区间）或含税毛利额（毛利额区间）从高到低排序，按 5/10/20 段分桶，百分比边界左开右闭，比如 0%-20%、20%-40%、40%-60%、60%-80%、80%-100%</p>
             <p>品牌数量 = 区间维度+叠加维度下品牌去重计数</p>
             <p>品牌数量占比 = 区间维度+叠加维度品牌去重计数 ÷ 叠加维度品牌去重计数</p>
             <p>SKU数量 = 区间维度+叠加维度下商品去重计数</p>
@@ -691,9 +699,9 @@
             <p>库存占比 = 区间维度+叠加维度期末含税库存金额 ÷ 叠加维度期末含税库存金额</p>
             <h4>特殊说明</h4>
             <ol>
-              <li>部分门店只有库存、没有销售，7063 仅含香化数据。</li>
-              <li>ERP门店 与旧上海/北京（上线 EOP 前，CDFBJ/CDFBJHL/CDFSHHQ/CDFSHPD/CDFSHHL/RSSH）没有用券金额、用积分金额，相关计算按 0 处理。</li>
-              <li>ZMGJHYG 只有销售，无库存/成本，相关指标显示为空或 0。</li>
+              <li>部分门店只有库存、没有销售， 7063 仅含香化数据</li>
+              <li>ERP门店 与旧上海/北京（上线 EOP 前,CDFBJ/CDFBJHL/CDFSHHQ/CDFSHPD/CDFSHHL/RSSH）没有用券金额、用积分金额，相关计算按 0 处理</li>
+              <li>ZMGJHYG只有销售，无库存/成本，相关指标显示为空或 0</li>
             </ol>
           </div>
         </div>
@@ -715,13 +723,13 @@
   </section>
 </main>
 
-<aside class="dev-panel collapsed" id="devPanel">
+<button type="button" class="dev-float" id="devFloat" title="开发版逻辑">逻辑</button>
+<aside class="dev-panel hidden" id="devPanel">
   <div class="dev-panel-head">
     <strong>开发版逻辑</strong>
-    <button type="button" class="dev-close" id="devPanelToggle" title="收起/展开"><i class="fa-solid fa-angles-right"></i></button>
+    <button type="button" class="dev-close" id="devPanelToggle" title="关闭"><i class="fa-solid fa-xmark"></i></button>
   </div>
   <div class="dev-panel-body" id="devPanelBody"></div>
-  <button type="button" class="dev-reopen" id="devPanelReopen" title="展开开发版逻辑"><i class="fa-solid fa-angles-left"></i></button>
 </aside>
 
 <script type="text/markdown" id="devDocMd">
@@ -729,59 +737,65 @@
 
 ## 一、筛选项与列表交互
 
-- 分析维度增加：**毛利额区间**、**销售额区间**
-- 分析维度 = 毛利额区间 / 销售额区间：
-  - 首列为对应区间
-  - 叠加维度不可选单品
-  - 叠加维度 = 品牌时，列表隐藏 **品牌数量**、**品牌数量占比**
-  - 隐藏字段：购物人数、票数、客单价、件单价、连带率
-  - 列表增加：品牌数量、品牌数量占比、SKU数量、SKU数量占比、销售占比、毛利占比、库存占比
-- 效率指标：下拉单选，枚举值（产品交叉比率 / 售罄率 / 动销率），默认为空；分析维度为毛利额区间 / 销售额区间时禁用，分析维度/叠加维度 为单品时，“动销率”不可选。
-  - 产品交叉比率 → 列表增加 **产品交叉比率**
-  - 售罄率 → 列表增加 正价平均折扣、非正价平均折扣、售罄率、正价售罄率、非正价售罄率、正价销售占比、非正价销售占比、正价毛利占比、非正价毛利占比
-  - 动销率 → 列表增加 SKU动销率、动销SKU数量、非动销SKU数量、动销库存占比、非动销库存占比
-- 正价折扣：数值输入框，单位 %，必填，默认 85%；默认禁用，仅效率指标选择“售罄率”时启用
+- 分析维度增加：毛利额区间、销售额区间
+- 分析维度 = 毛利额区间 / 销售额区间时：
+  1. 首列为对应区间
+  2. 叠加维度不可选单品
+  3. 叠加维度 = 品牌时，列表隐藏 品牌数量、品牌数量占比
+  4. 隐藏字段：购物人数、票数、客单价、件单价、连带率
+  5. 列表增加：品牌数量、品牌数量占比、SKU数量、SKU数量占比、销售占比、毛利占比、库存占比
+  6. 效率指标禁用，列表不展示 产品交叉比率+售罄率系列（9个字段）、动销率系列（5个字段）
+- 分析维度/叠加维度=单品时，动销率5个字段不展示
+- 效率指标：下拉单选，枚举值（不展示 / 展示），默认“不展示”；
+  1. 选择“展示”时，列表展示 产品交叉比率+售罄率系列（9个字段）、动销率系列（5个字段）
+  2. 选择“不展示”时，列表不展示 产品交叉比率+售罄率系列（9个字段）、动销率系列（5个字段）
+- 正价折扣：数值输入框，单位 %，必填，默认 85%，不可为空；默认禁用，仅当 效率指标=“展示” 且分析维度不为毛利额区间 / 销售额区间时启用
 - 毛利区间分段：下拉单选，枚举值（5/10/20），默认 5；默认禁用，仅分析维度选择“毛利额区间”时启用
 - 销售区间分段：下拉单选，枚举值（5/10/20），默认 5；默认不展示，仅分析维度选择“销售额区间”时替代毛利区间分段
-- 毛利率区间：数值输入框，单位 %；默认禁用，分析维度为毛利额区间或销售额区间时启用
+- 毛利率区间：两个数值输入框，单位 %，默认空；左输入框为空时，按<=右输入框值处理，右输入框为空时，按>=左输入框值处理；默认禁用，分析维度为毛利额区间或销售额区间时启用
+  - 示例：左值为空，右值=30%，则筛选毛利率<=30%的数据
+  - 左值为30%，右值为空，则筛选毛利率>=30%的数据
 - 筛选项顺序调整：如图所示
 
 ## 二、指标逻辑
 
-1. **产品交叉比率**：含税毛利额 ÷ ((期初含税库存金额 + 期末含税库存金额) ÷ 2)
-2. **售罄率**
-   - 正价/非正价判断（小票-单品级别）：综合折扣率 ≥ 输入的正价折扣判断为正价；综合折扣率 &lt; 输入的正价折扣判断为非正价
-   - 综合折扣率 = (销售收入 - 用券金额 - 用积分金额) ÷ 售价金额
-   - 示例：正价折扣输入 85%，综合折扣率 80% 为非正价，90% 为正价
-   - 正价平均折扣 = 正价商品 (销售收入 - 用券金额 - 用积分金额) ÷ 售价金额
-   - 售罄率 = 含税销售成本 ÷ (含税销售成本 + 含税期末库存金额)
-   - 正价售罄率 = 正价商品含税销售成本 ÷ (全部商品含税销售成本 + 含税期末库存金额)
-   - 正价销售占比 = 正价商品销售收入 ÷ 整体销售收入
-   - 正价毛利占比 = 正价商品含税毛利额 ÷ 整体含税毛利额
-   - 非正价同上
-3. **动销率**
-   - 判断标准：有交易即算动销，退货也算动销
-   - SKU动销率 = 有销售SKU数量 ÷ (有销售SKU数量 + 未销售且期末库存不为零的SKU数量)
-   - 动销SKU数量 = 有销售的SKU数量
-   - 非动销SKU数量 = 未销售且期末库存不为零的SKU数量
-   - 动销库存占比 = 动销商品期末含税库存金额 ÷ 整体期末含税库存金额
-   - 非动销库存占比 = 非动销商品期末含税库存金额 ÷ 整体期末含税库存金额
-4. **毛利/销售区间**
-   - 将某维度下的 SKU 按销售收入（销售额区间）或含税毛利额（毛利额区间）从高到低排序
-   - 按 5/10/20 段分桶，百分比边界左开右闭，例如 0%-20%、20%-40%、40%-60%、60%-80%、80%-100%
-   - 品牌数量 = 区间维度 + 叠加维度下品牌去重计数
-   - 品牌数量占比 = 区间维度 + 叠加维度品牌去重计数 ÷ 叠加维度品牌去重计数
-   - SKU数量 = 区间维度 + 叠加维度下商品去重计数
-   - SKU数量占比 = 区间维度 + 叠加维度商品去重计数 ÷ 叠加维度商品去重计数
-   - 销售占比 = 区间维度 + 叠加维度销售收入 ÷ 叠加维度销售收入
-   - 毛利占比 = 区间维度 + 叠加维度含税毛利额 ÷ 叠加维度含税毛利额
-   - 库存占比 = 区间维度 + 叠加维度期末含税库存金额 ÷ 叠加维度期末含税库存金额
+- 产品交叉比率：含税毛利额 ÷ ((期初含税库存金额 + 期末含税库存金额) ÷ 2)
+- 售罄率系列指标：
+  正价/非正价判断（小票-单品级别）：综合折扣率 ≥ 输入的正价折扣判断为正价；否则判断为非正价
+  - 综合折扣率 = (销售收入 - 用券金额 - 用积分金额) ÷ 售价金额
+  - 示例：正价折扣输入 85%，综合折扣率 80% 为非正价，90% 为正价
+  - 正价平均折扣 = 正价商品 (销售收入 - 用券金额 - 用积分金额) ÷ 售价金额
+  - 非正价平均折扣：非正价商品 (销售收入 - 用券金额 - 用积分金额) ÷ 售价金额
+  - 售罄率 = 含税销售成本 ÷ (含税销售成本 + 含税期末库存金额)
+  - 正价售罄率 = 正价商品含税销售成本 ÷ (全部商品含税销售成本 + 含税期末库存金额)
+  - 非正价售罄率：非正价商品含税销售成本 ÷ (全部商品含税销售成本 + 含税期末库存金额)
+  - 正价销售占比 = 正价商品销售收入 ÷ 整体销售收入
+  - 非正价销售占比：非正价商品销售收入 ÷ 整体销售收入
+  - 正价毛利占比 = 正价商品含税毛利额 ÷ 整体含税毛利额
+  - 非正价毛利占比 = 非正价商品含税毛利额 ÷ 整体含税毛利额
+- 动销率系列指标：
+  - 判断标准：有交易即算动销，退货也算动销
+  - SKU动销率 = 有销售SKU数量 ÷ (有销售SKU数量 + 未销售且期末库存不为零的SKU数量)
+  - 动销SKU数量 = 有销售的SKU数量
+  - 非动销SKU数量 = 未销售且期末库存不为零的SKU数量
+  - 动销库存占比 = 动销商品期末含税库存金额 ÷ 整体期末含税库存金额
+  - 非动销库存占比 = 非动销商品期末含税库存金额 ÷ 整体期末含税库存金额
+- 毛利/销售区间：
+  - 将某维度下的 SKU 按销售收入（销售额区间）或含税毛利额（毛利额区间）从高到低排序，按 5/10/20 段分桶，百分比边界左开右闭
+  - 示例，当毛利区间分段=5时，毛利额区间为0%-20%、20%-40%、40%-60%、60%-80%、80%-100%
+  - 品牌数量 = 区间维度 + 叠加维度下品牌去重计数
+  - 品牌数量占比 = 区间维度 + 叠加维度品牌去重计数 ÷ 叠加维度品牌去重计数
+  - SKU数量 = 区间维度 + 叠加维度下商品去重计数
+  - SKU数量占比 = 区间维度 + 叠加维度商品去重计数 ÷ 叠加维度商品去重计数
+  - 销售占比 = 区间维度 + 叠加维度销售收入 ÷ 叠加维度销售收入
+  - 毛利占比 = 区间维度 + 叠加维度含税毛利额 ÷ 叠加维度含税毛利额
+  - 库存占比 = 区间维度 + 叠加维度期末含税库存金额 ÷ 叠加维度期末含税库存金额
 
 ## 三、特殊数据口径
 
 - ERP门店与旧上海/北京（上线 EOP 前）无用券金额、用积分金额，按空 / 0 处理
 - ZMGJHYG 只有销售，无库存、无成本，相关指标为空或 0
-- 效率指标为空或分析维度不为“毛利额区间”/“销售额区间”时，剔除只有库存、无销售的行
+- 效率指标=“不展示”且分析维度不为“毛利额区间”/“销售额区间”时，剔除只有库存、无销售的行
 - 部分门店只有库存、没有销售，7063 仅含香化数据
 
 </script>
@@ -844,27 +858,25 @@
     {label:'库存占比', type:'percent'}
   ];
 
-  const EFFICIENCY_FIELDS = {
-    '产品交叉比率': [{label:'产品交叉比率', type:'percent'}],
-    '售罄率': [
-      {label:'正价平均折扣', type:'percent'},
-      {label:'非正价平均折扣', type:'percent'},
-      {label:'售罄率', type:'percent'},
-      {label:'正价售罄率', type:'percent'},
-      {label:'非正价售罄率', type:'percent'},
-      {label:'正价销售占比', type:'percent'},
-      {label:'非正价销售占比', type:'percent'},
-      {label:'正价毛利占比', type:'percent'},
-      {label:'非正价毛利占比', type:'percent'}
-    ],
-    '动销率': [
-      {label:'SKU动销率', type:'percent'},
-      {label:'动销SKU数量', type:'int'},
-      {label:'非动销SKU数量', type:'int'},
-      {label:'动销库存占比', type:'percent'},
-      {label:'非动销库存占比', type:'percent'}
-    ]
-  };
+  const CROSS_FIELDS = [{label:'产品交叉比率', type:'percent'}];
+  const SOLD_FIELDS = [
+    {label:'正价平均折扣', type:'percent'},
+    {label:'非正价平均折扣', type:'percent'},
+    {label:'售罄率', type:'percent'},
+    {label:'正价售罄率', type:'percent'},
+    {label:'非正价售罄率', type:'percent'},
+    {label:'正价销售占比', type:'percent'},
+    {label:'非正价销售占比', type:'percent'},
+    {label:'正价毛利占比', type:'percent'},
+    {label:'非正价毛利占比', type:'percent'}
+  ];
+  const MOVEMENT_FIELDS = [
+    {label:'SKU动销率', type:'percent'},
+    {label:'动销SKU数量', type:'int'},
+    {label:'非动销SKU数量', type:'int'},
+    {label:'动销库存占比', type:'percent'},
+    {label:'非动销库存占比', type:'percent'}
+  ];
 
   const CHANNEL_OPTIONS = ['国内-海南','国内非海南','海外','日上','前海','其他'];
   const STORE_OPTIONS = [
@@ -929,6 +941,7 @@
   const grossMin = $('#grossMin');
   const grossMax = $('#grossMax');
   const filterDiscount = $('#filterDiscount');
+  const discountError = $('#discountError');
   const segmentSelectSale = $('#segmentSelectSale');
   const userDocPanel = $('#userDocPanel');
   const docToggle = $('#docToggle');
@@ -936,7 +949,7 @@
   const devPanel = $('#devPanel');
   const devPanelToggle = $('#devPanelToggle');
   const devPanelBody = $('#devPanelBody');
-  const devPanelReopen = $('#devPanelReopen');
+  const devFloat = $('#devFloat');
   const tableWrap = $('#tableWrap');
   const dataTable = $('#dataTable');
   const totalCount = $('#totalCount');
@@ -1141,7 +1154,12 @@
     const interval = isIntervalDim(analysis);
     const cols = [];
     const common = COMMON_FIELDS.map(f => Object.assign({}, f));
-    const effCols = EFFICIENCY_FIELDS[eff] ? EFFICIENCY_FIELDS[eff].map(f => Object.assign({}, f)) : [];
+    const isSingle = analysis === '单品' || overlay === '单品';
+    let effCols = [];
+    if (eff === 'show' && !interval) {
+      effCols = CROSS_FIELDS.concat(SOLD_FIELDS).map(f => Object.assign({}, f));
+      if (!isSingle) effCols = effCols.concat(MOVEMENT_FIELDS.map(f => Object.assign({}, f)));
+    }
 
     if (analysis === '单品') {
       cols.push({key:'商品编码', label:'商品编码', type:'text'});
@@ -1289,12 +1307,13 @@
     currentData = [];
     for (let i=0;i<count;i++) currentData.push(generateRow(i, labels));
     const eff = efficiencySelect.value;
-    if (eff === '产品交叉比率') {
+    const interval = isIntervalDim(analysisSelect.value);
+    const isSingle = analysisSelect.value === '单品' || overlaySelect.value === '单品';
+    if (eff === 'show' && !interval) {
       currentData.forEach(row => {
         const avg = (row['_inventoryStart'] + row['_inventoryEnd']) / 2;
         row['产品交叉比率'] = avg > 0 ? round2(row['业务毛利'] / avg * 100) : 0;
       });
-    } else if (eff === '售罄率') {
       const threshold = parseFloat(filterDiscount.value) || 85;
       currentData.forEach(row => {
         const denom = row['售价金额'];
@@ -1325,18 +1344,19 @@
         row['正价毛利占比'] = totalProfit > 0 ? round2((row._isFullPrice ? row['业务毛利'] : 0) / totalProfit * 100) : 0;
         row['非正价毛利占比'] = totalProfit > 0 ? round2((row._isFullPrice ? 0 : row['业务毛利']) / totalProfit * 100) : 0;
       });
-    } else if (eff === '动销率') {
-      const totalInv = currentData.reduce((a, r) => a + r['_inventoryEnd'], 0);
-      currentData.forEach(row => {
-        const sold = row._hasSales ? randInt(1, 200) : 0;
-        const unsold = row._hasSales ? randInt(0, 50) : randInt(1, 120);
-        const soldInv = row._hasSales ? row['_inventoryEnd'] * rand(0.1, 1) : 0;
-        row['动销SKU数量'] = sold;
-        row['非动销SKU数量'] = unsold;
-        row['SKU动销率'] = (sold + unsold) > 0 ? round2(sold / (sold + unsold) * 100) : 0;
-        row['动销库存占比'] = totalInv > 0 ? round2(soldInv / totalInv * 100) : 0;
-        row['非动销库存占比'] = totalInv > 0 ? round2(Math.max(0, 100 - row['动销库存占比'])) : 0;
-      });
+      if (!isSingle) {
+        const totalInv = currentData.reduce((a, r) => a + r['_inventoryEnd'], 0);
+        currentData.forEach(row => {
+          const sold = row._hasSales ? randInt(1, 200) : 0;
+          const unsold = row._hasSales ? randInt(0, 50) : randInt(1, 120);
+          const soldInv = row._hasSales ? row['_inventoryEnd'] * rand(0.1, 1) : 0;
+          row['动销SKU数量'] = sold;
+          row['非动销SKU数量'] = unsold;
+          row['SKU动销率'] = (sold + unsold) > 0 ? round2(sold / (sold + unsold) * 100) : 0;
+          row['动销库存占比'] = totalInv > 0 ? round2(soldInv / totalInv * 100) : 0;
+          row['非动销库存占比'] = totalInv > 0 ? round2(Math.max(0, 100 - row['动销库存占比'])) : 0;
+        });
+      }
     }
     page = 1;
     renderTable();
@@ -1442,11 +1462,13 @@
     grossMin.disabled = !interval;
     grossMax.disabled = !interval;
     efficiencySelect.disabled = interval;
-    const movementOpt = efficiencySelect.querySelector('option[value="动销率"]');
-    const disallowMovement = analysisSelect.value === '单品' || overlaySelect.value === '单品';
-    if (movementOpt) movementOpt.disabled = disallowMovement;
-    if (disallowMovement && efficiencySelect.value === '动销率') efficiencySelect.value = '';
-    filterDiscount.disabled = efficiencySelect.value !== '售罄率';
+    filterDiscount.disabled = !(efficiencySelect.value === 'show' && !interval);
+    if (filterDiscount.disabled) {
+      filterDiscount.classList.remove('invalid');
+      discountError.classList.add('hidden');
+      filterDiscount.closest('.form-item').classList.remove('has-error');
+      filterDiscount.placeholder = '请输入';
+    }
   }
 
   function onAnalysisChange(){
@@ -1506,6 +1528,15 @@
     URL.revokeObjectURL(a.href);
   }
 
+  function validateDiscount(){
+    const invalid = !filterDiscount.disabled && filterDiscount.value.trim() === '';
+    filterDiscount.classList.toggle('invalid', invalid);
+    discountError.classList.toggle('hidden', !invalid);
+    filterDiscount.closest('.form-item').classList.toggle('has-error', invalid);
+    filterDiscount.placeholder = invalid ? '' : '请输入';
+    return !invalid;
+  }
+
   function renderMarkdown(src){
     const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const inline = s => esc(s)
@@ -1556,7 +1587,22 @@
   efficiencySelect.addEventListener('change', () => { updateControlStates(); refreshData(); });
   segmentSelect.addEventListener('change', refreshData);
   segmentSelectSale.addEventListener('change', refreshData);
-  $('#queryBtn').addEventListener('click', refreshData);
+  filterDiscount.addEventListener('blur', validateDiscount);
+  filterDiscount.addEventListener('input', () => {
+    if (filterDiscount.value.trim() !== '') {
+      filterDiscount.classList.remove('invalid');
+      discountError.classList.add('hidden');
+      filterDiscount.closest('.form-item').classList.remove('has-error');
+      filterDiscount.placeholder = '请输入';
+    }
+  });
+  $('#queryBtn').addEventListener('click', () => {
+    if (!validateDiscount()) {
+      filterDiscount.focus();
+      return;
+    }
+    refreshData();
+  });
   $('#resetBtn').addEventListener('click', resetFilters);
   $('#exportBtn').addEventListener('click', exportCsv);
 
@@ -1568,15 +1614,8 @@
   userDocPanel.addEventListener('click', e => e.stopPropagation());
   document.addEventListener('click', () => userDocPanel.classList.add('hidden'));
 
-  devPanelToggle.addEventListener('click', e => {
-    e.stopPropagation();
-    devPanel.classList.toggle('collapsed');
-    devPanelToggle.querySelector('i').className = devPanel.classList.contains('collapsed') ? 'fa-solid fa-angles-left' : 'fa-solid fa-angles-right';
-  });
-  devPanelReopen.addEventListener('click', () => {
-    devPanel.classList.remove('collapsed');
-    devPanelToggle.querySelector('i').className = 'fa-solid fa-angles-right';
-  });
+  devFloat.addEventListener('click', () => devPanel.classList.toggle('hidden'));
+  devPanelToggle.addEventListener('click', () => devPanel.classList.add('hidden'));
 
   pageSizeSelect.addEventListener('change', () => {
     pageSize = +pageSizeSelect.value;
