@@ -139,8 +139,23 @@ select.control{min-width:110px}
 .note-pop-close{border:none;background:transparent;color:#7c8aa0;font-size:18px;line-height:1;cursor:pointer;padding:0 2px}
 .note-pop-close:hover{color:#e5484d}
 .note-pop-body{padding:12px 14px;max-height:62vh;overflow:auto}
+.note-pop-head{cursor:move;user-select:none}
+.md-h1{font-size:15px;font-weight:700;color:#1d3358;margin:10px 0 6px}
+.md-h2{font-size:13.5px;font-weight:700;color:#1d3358;margin:12px 0 4px}
+.md-h3{font-size:12.5px;font-weight:700;color:#2b4a7a;margin:10px 0 4px}
+.md-p{margin:4px 0;color:#42536f}
+.md-ul,.md-ol{margin:4px 0 6px;padding-left:20px}
+.md-ul li,.md-ol li{margin:2px 0;color:#42536f}
+.md-table{border-collapse:collapse;width:100%;margin:6px 0;font-size:12px;color:#42536f}
+.md-table th,.md-table td{border:1px solid #e2e8f2;padding:5px 8px;text-align:left;vertical-align:top}
+.md-table th{background:#f4f8fe;font-weight:600;color:#1d3358}
+.md-quote{background:#fff8ec;border-left:3px solid #f2b26b;padding:8px 12px;color:#8a6d3b;margin:6px 0;border-radius:0 6px 6px 0}
+.dev-fab{position:fixed;top:12px;right:16px;z-index:9998;display:flex;align-items:center;gap:6px;height:32px;padding:0 14px;border-radius:16px;background:#1d3358;color:#fff;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(21,60,120,.25);user-select:none}
+.dev-fab:hover{background:#2b4a7a}
+.dev-fab.dragging{opacity:.85;cursor:grabbing}
 .note-sub{padding-left:22px;color:#5d6f8c}
 .note-note-line{padding-left:22px;color:#b45309}
+.note-section{font-weight:600;color:#1d3358;margin-top:10px;margin-bottom:2px}
 .card-body{padding:14px 16px}
 
 /* KPI */
@@ -272,6 +287,7 @@ table.data tr.total td.sticky-col{background:#eaf3ff}
 </style>
 </head>
 <body>
+  <div class="dev-fab" id="devLogicBtn"><i class="fa-solid fa-lightbulb"></i> 开发逻辑</div>
 <div class="sys-nav">
   <div class="sys-brand">
     <div class="sys-logo"><i class="fa-solid fa-database"></i></div>
@@ -330,7 +346,7 @@ table.data tr.total td.sticky-col{background:#eaf3ff}
   <div class="filter-card">
     <div class="filter-row">
       <div class="filter-group"><label>时间粒度</label><div class="seg" id="granSeg"><button class="active" data-gran="year">年</button><button data-gran="month">月</button><button data-gran="day">日区间</button></div></div>
-      <div class="filter-group" id="holidayBox"><label>节假日</label><select class="control" id="holidayFilter" title="当前演示日期范围为2026年节假日"><option value="">不限（自定义）</option><option value="元旦">元旦</option><option value="春节">春节</option><option value="清明节">清明节</option><option value="劳动节">劳动节</option><option value="端午节">端午节</option><option value="中秋节">中秋节</option><option value="国庆节">国庆节</option></select></div>
+      <div class="filter-group" id="holidayBox"><label>节假日</label><select class="control" id="holidayFilter" title="当前演示日期范围为2026年节假日"><option value="">不限（自定义）</option><option value="春节">春节</option><option value="劳动节">劳动节</option><option value="国庆节">国庆节</option></select></div>
       <div class="filter-group" id="yearBox"><label>年度</label><select class="control"><option>2026年</option><option>2025年</option><option>2024年</option></select></div>
       <div class="filter-group hidden" id="monthBox"><label>月份</label><select class="control"><option>2026年8月</option><option>2026年7月</option><option>2026年6月</option></select></div>
       <div class="filter-group hidden" id="dayBox"><label>日期区间</label><div class="range"><input class="control" type="date" value="2026-08-01"><span>至</span><input class="control" type="date" value="2026-08-13"></div></div>
@@ -871,13 +887,13 @@ table.data tr.total td.sticky-col{background:#eaf3ff}
       <div class="sub-panel" id="customer-track" data-split="1">
         <div class="customer-share-chart"></div>
         <div class="table-scroll"><table class="data">
-          <thead><tr><th class="sticky-col">赛道</th><th class="num">消费金额(亿)</th><th class="num">会员消费(亿)</th><th class="num nonmember-col">非会员消费(亿)</th><th class="num member-share-col">会员消费占比</th><th class="num">购物人数(万)</th><th class="num">客单价(元)</th><th class="num">同比</th></tr></thead>
+          <thead><tr><th class="sticky-col">赛道</th><th class="num">消费金额(亿)</th><th class="num">会员消费(亿)</th><th class="num nonmember-col">非会员消费(亿)</th><th class="num member-share-col">会员消费占比</th><th class="num">购物人数(万)</th><th class="num">客单价(元)</th><th class="num">毛利额(亿)</th><th class="num">毛利率</th><th class="num">净毛利额(亿)</th><th class="num">净毛利率</th><th class="num">同比</th></tr></thead>
           <tbody>
-            <tr class="total"><td class="sticky-col">合计</td><td class="num">428.6</td><td class="num">296.5</td><td class="num nonmember-col">132.1</td><td class="num member-share-col">69.2%</td><td class="num">679.2</td><td class="num">6,309</td><td class="num yoy-cell up">+13.8%</td></tr>
-            <tr class="customer-track-row customer-data-row" data-total="185.2" data-member="138.4" data-nonmember="46.8" data-member-share="74.7%"><td class="sticky-col">海南离岛免税</td><td class="num">185.2</td><td class="num">138.4</td><td class="num nonmember-col">46.8</td><td class="num member-share-col">74.7%</td><td class="num">261.8</td><td class="num">7,076</td><td class="num yoy-cell up">+17.8%</td></tr>
-            <tr class="customer-track-row customer-data-row" data-total="126.8" data-member="84.2" data-nonmember="42.6" data-member-share="66.4%"><td class="sticky-col">综合旅游零售</td><td class="num">126.8</td><td class="num">84.2</td><td class="num nonmember-col">42.6</td><td class="num member-share-col">66.4%</td><td class="num">218.4</td><td class="num">5,806</td><td class="num yoy-cell up">+11.5%</td></tr>
-            <tr class="customer-track-row customer-data-row" data-total="73.4" data-member="49.9" data-nonmember="23.5" data-member-share="68.0%"><td class="sticky-col">线上</td><td class="num">73.4</td><td class="num">49.9</td><td class="num nonmember-col">23.5</td><td class="num member-share-col">68.0%</td><td class="num">140.5</td><td class="num">5,224</td><td class="num yoy-cell up">+23.6%</td></tr>
-            <tr class="customer-track-row customer-data-row" data-total="43.2" data-member="24.0" data-nonmember="19.2" data-member-share="55.6%"><td class="sticky-col">国际化</td><td class="num">43.2</td><td class="num">24.0</td><td class="num nonmember-col">19.2</td><td class="num member-share-col">55.6%</td><td class="num">58.5</td><td class="num">7,385</td><td class="num yoy-cell up">+8.9%</td></tr>
+            <tr class="total"><td class="sticky-col">合计</td><td class="num">428.6</td><td class="num">296.5</td><td class="num nonmember-col">132.1</td><td class="num member-share-col">69.2%</td><td class="num">679.2</td><td class="num">6,309</td><td class="num">175.7</td><td class="num">41.0%</td><td class="num">158.6</td><td class="num">37.0%</td><td class="num yoy-cell up">+13.8%</td></tr>
+            <tr class="customer-track-row customer-data-row" data-total="185.2" data-member="138.4" data-nonmember="46.8" data-member-share="74.7%"><td class="sticky-col">海南离岛免税</td><td class="num">185.2</td><td class="num">138.4</td><td class="num nonmember-col">46.8</td><td class="num member-share-col">74.7%</td><td class="num">261.8</td><td class="num">7,076</td><td class="num">77.8</td><td class="num">42.0%</td><td class="num">70.4</td><td class="num">38.0%</td><td class="num yoy-cell up">+17.8%</td></tr>
+            <tr class="customer-track-row customer-data-row" data-total="126.8" data-member="84.2" data-nonmember="42.6" data-member-share="66.4%"><td class="sticky-col">综合旅游零售</td><td class="num">126.8</td><td class="num">84.2</td><td class="num nonmember-col">42.6</td><td class="num member-share-col">66.4%</td><td class="num">218.4</td><td class="num">5,806</td><td class="num">50.7</td><td class="num">40.0%</td><td class="num">45.6</td><td class="num">36.0%</td><td class="num yoy-cell up">+11.5%</td></tr>
+            <tr class="customer-track-row customer-data-row" data-total="73.4" data-member="49.9" data-nonmember="23.5" data-member-share="68.0%"><td class="sticky-col">线上</td><td class="num">73.4</td><td class="num">49.9</td><td class="num nonmember-col">23.5</td><td class="num member-share-col">68.0%</td><td class="num">140.5</td><td class="num">5,224</td><td class="num">27.9</td><td class="num">38.0%</td><td class="num">25.0</td><td class="num">34.0%</td><td class="num yoy-cell up">+23.6%</td></tr>
+            <tr class="customer-track-row customer-data-row" data-total="43.2" data-member="24.0" data-nonmember="19.2" data-member-share="55.6%"><td class="sticky-col">国际化</td><td class="num">43.2</td><td class="num">24.0</td><td class="num nonmember-col">19.2</td><td class="num member-share-col">55.6%</td><td class="num">58.5</td><td class="num">7,385</td><td class="num">16.8</td><td class="num">39.0%</td><td class="num">15.1</td><td class="num">35.0%</td><td class="num yoy-cell up">+8.9%</td></tr>
             </tbody>
         </table></div>
       </div>
@@ -885,18 +901,18 @@ table.data tr.total td.sticky-col{background:#eaf3ff}
       <div class="sub-panel hidden" id="customer-category" data-split="1">
         <div class="customer-share-chart"></div>
         <div class="table-scroll"><table class="data">
-          <thead><tr><th class="sticky-col">业务品类</th><th class="num">消费金额(亿)</th><th class="num">会员消费(亿)</th><th class="num nonmember-col">非会员消费(亿)</th><th class="num member-share-col">会员消费占比</th><th class="num">购物人数(万)</th><th class="num">客单价(元)</th><th class="num">复购率</th><th class="num">同比</th></tr></thead>
+          <thead><tr><th class="sticky-col">业务品类</th><th class="num">消费金额(亿)</th><th class="num">会员消费(亿)</th><th class="num nonmember-col">非会员消费(亿)</th><th class="num member-share-col">会员消费占比</th><th class="num">购物人数(万)</th><th class="num">客单价(元)</th><th class="num">毛利额(亿)</th><th class="num">毛利率</th><th class="num">净毛利额(亿)</th><th class="num">净毛利率</th><th class="num">同比</th></tr></thead>
           <tbody>
-            <tr class="total"><td class="sticky-col">合计</td><td class="num">428.6</td><td class="num">296.5</td><td class="num nonmember-col">132.1</td><td class="num member-share-col">69.2%</td><td class="num">679.2</td><td class="num">6,309</td><td class="num">36.8%</td><td class="num yoy-cell up">+13.8%</td></tr>
-            <tr class="customer-cat-row customer-data-row" data-total="128.1" data-member="88.6" data-nonmember="39.5" data-member-share="69.2%"><td class="sticky-col">香化</td><td class="num">128.1</td><td class="num">88.6</td><td class="num nonmember-col">39.5</td><td class="num member-share-col">69.2%</td><td class="num">386.2</td><td class="num">3,316</td><td class="num">42.5%</td><td class="num yoy-cell up">+20.2%</td></tr>
-            <tr class="customer-cat-row customer-data-row" data-total="90.2" data-member="62.4" data-nonmember="27.8" data-member-share="69.2%"><td class="sticky-col">腕表珠宝</td><td class="num">90.2</td><td class="num">62.4</td><td class="num nonmember-col">27.8</td><td class="num member-share-col">69.2%</td><td class="num">62.1</td><td class="num">14,525</td><td class="num">31.6%</td><td class="num yoy-cell up">+12.9%</td></tr>
-            <tr class="customer-cat-row customer-data-row" data-total="77.9" data-member="53.9" data-nonmember="24.0" data-member-share="69.2%"><td class="sticky-col">奢侈品</td><td class="num">77.9</td><td class="num">53.9</td><td class="num nonmember-col">24.0</td><td class="num member-share-col">69.2%</td><td class="num">68.3</td><td class="num">11,406</td><td class="num">29.8%</td><td class="num yoy-cell up">+15.4%</td></tr>
-            <tr class="customer-cat-row customer-data-row" data-total="59.7" data-member="41.3" data-nonmember="18.4" data-member-share="69.2%"><td class="sticky-col">进口酒</td><td class="num">59.7</td><td class="num">41.3</td><td class="num nonmember-col">18.4</td><td class="num member-share-col">69.2%</td><td class="num">97.0</td><td class="num">6,155</td><td class="num">34.2%</td><td class="num yoy-cell up">+11.7%</td></tr>
-            <tr class="customer-cat-row customer-data-row" data-total="39.9" data-member="27.6" data-nonmember="12.3" data-member-share="69.2%"><td class="sticky-col">进口烟</td><td class="num">39.9</td><td class="num">27.6</td><td class="num nonmember-col">12.3</td><td class="num member-share-col">69.2%</td><td class="num">69.5</td><td class="num">5,741</td><td class="num">32.8%</td><td class="num yoy-cell up">+7.9%</td></tr>
-            <tr class="customer-cat-row customer-data-row" data-total="17.1" data-member="11.8" data-nonmember="5.3" data-member-share="69.0%"><td class="sticky-col">国产酒</td><td class="num">17.1</td><td class="num">11.8</td><td class="num nonmember-col">5.3</td><td class="num member-share-col">69.0%</td><td class="num">41.3</td><td class="num">4,140</td><td class="num">27.4%</td><td class="num yoy-cell up">+9.1%</td></tr>
-            <tr class="customer-cat-row customer-data-row" data-total="11.7" data-member="8.1" data-nonmember="3.6" data-member-share="69.2%"><td class="sticky-col">国产烟</td><td class="num">11.7</td><td class="num">8.1</td><td class="num nonmember-col">3.6</td><td class="num member-share-col">69.2%</td><td class="num">32.7</td><td class="num">3,578</td><td class="num">25.7%</td><td class="num yoy-cell up">+6.2%</td></tr>
-            <tr class="customer-cat-row customer-data-row" data-total="2.7" data-member="1.9" data-nonmember="0.8" data-member-share="70.4%"><td class="sticky-col">食品百货</td><td class="num">2.7</td><td class="num">1.9</td><td class="num nonmember-col">0.8</td><td class="num member-share-col">70.4%</td><td class="num">18.5</td><td class="num">1,459</td><td class="num">19.4%</td><td class="num yoy-cell up">+4.5%</td></tr>
-            <tr class="customer-cat-row customer-data-row" data-total="1.3" data-member="0.9" data-nonmember="0.4" data-member-share="69.2%"><td class="sticky-col">商贸</td><td class="num">1.3</td><td class="num">0.9</td><td class="num nonmember-col">0.4</td><td class="num member-share-col">69.2%</td><td class="num">14.2</td><td class="num">915</td><td class="num">16.8%</td><td class="num yoy-cell up">+3.1%</td></tr>
+            <tr class="total"><td class="sticky-col">合计</td><td class="num">428.6</td><td class="num">296.5</td><td class="num nonmember-col">132.1</td><td class="num member-share-col">69.2%</td><td class="num">679.2</td><td class="num">6,309</td><td class="num">175.7</td><td class="num">41.0%</td><td class="num">158.6</td><td class="num">37.0%</td><td class="num yoy-cell up">+13.8%</td></tr>
+            <tr class="customer-cat-row customer-data-row" data-total="128.1" data-member="88.6" data-nonmember="39.5" data-member-share="69.2%"><td class="sticky-col">香化</td><td class="num">128.1</td><td class="num">88.6</td><td class="num nonmember-col">39.5</td><td class="num member-share-col">69.2%</td><td class="num">386.2</td><td class="num">3,316</td><td class="num">56.4</td><td class="num">44.0%</td><td class="num">51.2</td><td class="num">40.0%</td><td class="num yoy-cell up">+20.2%</td></tr>
+            <tr class="customer-cat-row customer-data-row" data-total="90.2" data-member="62.4" data-nonmember="27.8" data-member-share="69.2%"><td class="sticky-col">腕表珠宝</td><td class="num">90.2</td><td class="num">62.4</td><td class="num nonmember-col">27.8</td><td class="num member-share-col">69.2%</td><td class="num">62.1</td><td class="num">14,525</td><td class="num">37.9</td><td class="num">42.0%</td><td class="num">34.3</td><td class="num">38.0%</td><td class="num yoy-cell up">+12.9%</td></tr>
+            <tr class="customer-cat-row customer-data-row" data-total="77.9" data-member="53.9" data-nonmember="24.0" data-member-share="69.2%"><td class="sticky-col">奢侈品</td><td class="num">77.9</td><td class="num">53.9</td><td class="num nonmember-col">24.0</td><td class="num member-share-col">69.2%</td><td class="num">68.3</td><td class="num">11,406</td><td class="num">33.5</td><td class="num">43.0%</td><td class="num">30.4</td><td class="num">39.0%</td><td class="num yoy-cell up">+15.4%</td></tr>
+            <tr class="customer-cat-row customer-data-row" data-total="59.7" data-member="41.3" data-nonmember="18.4" data-member-share="69.2%"><td class="sticky-col">进口酒</td><td class="num">59.7</td><td class="num">41.3</td><td class="num nonmember-col">18.4</td><td class="num member-share-col">69.2%</td><td class="num">97.0</td><td class="num">6,155</td><td class="num">20.9</td><td class="num">35.0%</td><td class="num">18.5</td><td class="num">31.0%</td><td class="num yoy-cell up">+11.7%</td></tr>
+            <tr class="customer-cat-row customer-data-row" data-total="39.9" data-member="27.6" data-nonmember="12.3" data-member-share="69.2%"><td class="sticky-col">进口烟</td><td class="num">39.9</td><td class="num">27.6</td><td class="num nonmember-col">12.3</td><td class="num member-share-col">69.2%</td><td class="num">69.5</td><td class="num">5,741</td><td class="num">11.2</td><td class="num">28.0%</td><td class="num">9.6</td><td class="num">24.0%</td><td class="num yoy-cell up">+7.9%</td></tr>
+            <tr class="customer-cat-row customer-data-row" data-total="17.1" data-member="11.8" data-nonmember="5.3" data-member-share="69.0%"><td class="sticky-col">国产酒</td><td class="num">17.1</td><td class="num">11.8</td><td class="num nonmember-col">5.3</td><td class="num member-share-col">69.0%</td><td class="num">41.3</td><td class="num">4,140</td><td class="num">5.6</td><td class="num">33.0%</td><td class="num">5.0</td><td class="num">29.0%</td><td class="num yoy-cell up">+9.1%</td></tr>
+            <tr class="customer-cat-row customer-data-row" data-total="11.7" data-member="8.1" data-nonmember="3.6" data-member-share="69.2%"><td class="sticky-col">国产烟</td><td class="num">11.7</td><td class="num">8.1</td><td class="num nonmember-col">3.6</td><td class="num member-share-col">69.2%</td><td class="num">32.7</td><td class="num">3,578</td><td class="num">3.2</td><td class="num">27.0%</td><td class="num">2.7</td><td class="num">23.0%</td><td class="num yoy-cell up">+6.2%</td></tr>
+            <tr class="customer-cat-row customer-data-row" data-total="2.7" data-member="1.9" data-nonmember="0.8" data-member-share="70.4%"><td class="sticky-col">食品百货</td><td class="num">2.7</td><td class="num">1.9</td><td class="num nonmember-col">0.8</td><td class="num member-share-col">70.4%</td><td class="num">18.5</td><td class="num">1,459</td><td class="num">0.8</td><td class="num">30.0%</td><td class="num">0.7</td><td class="num">26.0%</td><td class="num yoy-cell up">+4.5%</td></tr>
+            <tr class="customer-cat-row customer-data-row" data-total="1.3" data-member="0.9" data-nonmember="0.4" data-member-share="69.2%"><td class="sticky-col">商贸</td><td class="num">1.3</td><td class="num">0.9</td><td class="num nonmember-col">0.4</td><td class="num member-share-col">69.2%</td><td class="num">14.2</td><td class="num">915</td><td class="num">0.4</td><td class="num">32.0%</td><td class="num">0.4</td><td class="num">28.0%</td><td class="num yoy-cell up">+3.1%</td></tr>
            </tbody>
         </table></div>
       </div>
@@ -904,12 +920,12 @@ table.data tr.total td.sticky-col{background:#eaf3ff}
       <div class="sub-panel hidden" id="customer-gender">
         <div class="customer-share-chart"></div>
         <div class="table-scroll"><table class="data">
-          <thead><tr><th class="sticky-col">性别</th><th class="num">消费金额(亿)</th><th class="num">购物人数(万)</th><th class="num">客单件(件)</th><th class="num">客单价(元)</th><th class="num">复购率</th><th class="num">同比</th></tr></thead>
+          <thead><tr><th class="sticky-col">性别</th><th class="num">消费金额(亿)</th><th class="num">购物人数(万)</th><th class="num">客单件(件)</th><th class="num">客单价(元)</th><th class="num">毛利额(亿)</th><th class="num">毛利率</th><th class="num">净毛利额(亿)</th><th class="num">净毛利率</th><th class="num">同比</th></tr></thead>
           <tbody>
-            <tr class="total"><td class="sticky-col">合计</td><td class="num">296.5</td><td class="num">612.4</td><td class="num">2.4</td><td class="num">4,842</td><td class="num">36.8%</td><td class="num yoy-cell up">+18.2%</td></tr>
-            <tr class="customer-data-row" data-total="172.4"><td class="sticky-col">女</td><td class="num">172.4</td><td class="num">336.8</td><td class="num">2.5</td><td class="num">5,119</td><td class="num">39.2%</td><td class="num yoy-cell up">+19.4%</td></tr>
-            <tr class="customer-data-row" data-total="96.3"><td class="sticky-col">男</td><td class="num">96.3</td><td class="num">214.1</td><td class="num">2.2</td><td class="num">4,498</td><td class="num">33.7%</td><td class="num yoy-cell up">+15.8%</td></tr>
-            <tr class="customer-data-row" data-total="27.8"><td class="sticky-col">未知</td><td class="num">27.8</td><td class="num">61.5</td><td class="num">2.1</td><td class="num">4,520</td><td class="num">28.4%</td><td class="num yoy-cell up">+9.2%</td></tr>
+            <tr class="total"><td class="sticky-col">合计</td><td class="num">296.5</td><td class="num">612.4</td><td class="num">2.4</td><td class="num">4,842</td><td class="num">129.6</td><td class="num">43.7%</td><td class="num">118.9</td><td class="num">40.1%</td><td class="num yoy-cell up">+18.2%</td></tr>
+            <tr class="customer-data-row" data-total="172.4"><td class="sticky-col">女</td><td class="num">172.4</td><td class="num">336.8</td><td class="num">2.5</td><td class="num">5,119</td><td class="num">75.9</td><td class="num">44.0%</td><td class="num">69.8</td><td class="num">40.5%</td><td class="num yoy-cell up">+19.4%</td></tr>
+            <tr class="customer-data-row" data-total="96.3"><td class="sticky-col">男</td><td class="num">96.3</td><td class="num">214.1</td><td class="num">2.2</td><td class="num">4,498</td><td class="num">40.9</td><td class="num">42.5%</td><td class="num">37.5</td><td class="num">38.9%</td><td class="num yoy-cell up">+15.8%</td></tr>
+            <tr class="customer-data-row" data-total="27.8"><td class="sticky-col">未知</td><td class="num">27.8</td><td class="num">61.5</td><td class="num">2.1</td><td class="num">4,520</td><td class="num">11.4</td><td class="num">41.0%</td><td class="num">10.3</td><td class="num">37.0%</td><td class="num yoy-cell up">+9.2%</td></tr>
           </tbody>
         </table></div>
       </div>
@@ -917,17 +933,17 @@ table.data tr.total td.sticky-col{background:#eaf3ff}
       <div class="sub-panel hidden" id="customer-age">
         <div class="customer-share-chart"></div>
         <div class="table-scroll"><table class="data">
-          <thead><tr><th class="sticky-col">年龄段</th><th class="num">消费金额(亿)</th><th class="num">购物人数(万)</th><th class="num">客单件(件)</th><th class="num">客单价(元)</th><th class="num">复购率</th><th class="num">同比</th></tr></thead>
+          <thead><tr><th class="sticky-col">年龄段</th><th class="num">消费金额(亿)</th><th class="num">购物人数(万)</th><th class="num">客单件(件)</th><th class="num">客单价(元)</th><th class="num">毛利额(亿)</th><th class="num">毛利率</th><th class="num">净毛利额(亿)</th><th class="num">净毛利率</th><th class="num">同比</th></tr></thead>
           <tbody>
-            <tr class="total"><td class="sticky-col">合计</td><td class="num">296.5</td><td class="num">612.4</td><td class="num">2.4</td><td class="num">4,842</td><td class="num">36.8%</td><td class="num yoy-cell up">+18.2%</td></tr>
-            <tr class="customer-data-row" data-total="64.2"><td class="sticky-col">29-33</td><td class="num">64.2</td><td class="num">118.6</td><td class="num">2.7</td><td class="num">5,413</td><td class="num">41.3%</td><td class="num yoy-cell up">+20.1%</td></tr>
-            <tr class="customer-data-row" data-total="58.7"><td class="sticky-col">34-40</td><td class="num">58.7</td><td class="num">106.2</td><td class="num">2.6</td><td class="num">5,527</td><td class="num">40.8%</td><td class="num yoy-cell up">+18.5%</td></tr>
-            <tr class="customer-data-row" data-total="52.4"><td class="sticky-col">24-28</td><td class="num">52.4</td><td class="num">92.7</td><td class="num">2.4</td><td class="num">5,653</td><td class="num">38.2%</td><td class="num yoy-cell up">+22.7%</td></tr>
-            <tr class="customer-data-row" data-total="43.1"><td class="sticky-col">41-45</td><td class="num">43.1</td><td class="num">74.9</td><td class="num">2.4</td><td class="num">5,754</td><td class="num">37.6%</td><td class="num yoy-cell up">+16.9%</td></tr>
-            <tr class="customer-data-row" data-total="31.9"><td class="sticky-col">46-50</td><td class="num">31.9</td><td class="num">68.2</td><td class="num">2.2</td><td class="num">4,677</td><td class="num">33.4%</td><td class="num yoy-cell up">+14.3%</td></tr>
-            <tr class="customer-data-row" data-total="24.6"><td class="sticky-col">20-23</td><td class="num">24.6</td><td class="num">68.4</td><td class="num">2.1</td><td class="num">3,596</td><td class="num">28.9%</td><td class="num yoy-cell up">+19.8%</td></tr>
-            <tr class="customer-data-row" data-total="16.2"><td class="sticky-col">50以上</td><td class="num">16.2</td><td class="num">57.1</td><td class="num">1.9</td><td class="num">2,837</td><td class="num">29.6%</td><td class="num yoy-cell up">+10.7%</td></tr>
-            <tr class="customer-data-row" data-total="5.4"><td class="sticky-col">18-19</td><td class="num">5.4</td><td class="num">26.3</td><td class="num">1.7</td><td class="num">2,053</td><td class="num">21.4%</td><td class="num yoy-cell up">+13.6%</td></tr>
+            <tr class="total"><td class="sticky-col">合计</td><td class="num">296.5</td><td class="num">612.4</td><td class="num">2.4</td><td class="num">4,842</td><td class="num">129.6</td><td class="num">43.7%</td><td class="num">118.9</td><td class="num">40.1%</td><td class="num yoy-cell up">+18.2%</td></tr>
+            <tr class="customer-data-row" data-total="64.2"><td class="sticky-col">29-33</td><td class="num">64.2</td><td class="num">118.6</td><td class="num">2.7</td><td class="num">5,413</td><td class="num">28.2</td><td class="num">44.0%</td><td class="num">25.7</td><td class="num">40.0%</td><td class="num yoy-cell up">+20.1%</td></tr>
+            <tr class="customer-data-row" data-total="58.7"><td class="sticky-col">34-40</td><td class="num">58.7</td><td class="num">106.2</td><td class="num">2.6</td><td class="num">5,527</td><td class="num">25.2</td><td class="num">43.0%</td><td class="num">22.9</td><td class="num">39.0%</td><td class="num yoy-cell up">+18.5%</td></tr>
+            <tr class="customer-data-row" data-total="52.4"><td class="sticky-col">24-28</td><td class="num">52.4</td><td class="num">92.7</td><td class="num">2.4</td><td class="num">5,653</td><td class="num">23.6</td><td class="num">45.0%</td><td class="num">21.5</td><td class="num">41.0%</td><td class="num yoy-cell up">+22.7%</td></tr>
+            <tr class="customer-data-row" data-total="43.1"><td class="sticky-col">41-45</td><td class="num">43.1</td><td class="num">74.9</td><td class="num">2.4</td><td class="num">5,754</td><td class="num">18.1</td><td class="num">42.0%</td><td class="num">16.4</td><td class="num">38.0%</td><td class="num yoy-cell up">+16.9%</td></tr>
+            <tr class="customer-data-row" data-total="31.9"><td class="sticky-col">46-50</td><td class="num">31.9</td><td class="num">68.2</td><td class="num">2.2</td><td class="num">4,677</td><td class="num">13.1</td><td class="num">41.0%</td><td class="num">11.8</td><td class="num">37.0%</td><td class="num yoy-cell up">+14.3%</td></tr>
+            <tr class="customer-data-row" data-total="24.6"><td class="sticky-col">20-23</td><td class="num">24.6</td><td class="num">68.4</td><td class="num">2.1</td><td class="num">3,596</td><td class="num">9.8</td><td class="num">40.0%</td><td class="num">8.9</td><td class="num">36.0%</td><td class="num yoy-cell up">+19.8%</td></tr>
+            <tr class="customer-data-row" data-total="16.2"><td class="sticky-col">50以上</td><td class="num">16.2</td><td class="num">57.1</td><td class="num">1.9</td><td class="num">2,837</td><td class="num">6.2</td><td class="num">38.0%</td><td class="num">5.5</td><td class="num">34.0%</td><td class="num yoy-cell up">+10.7%</td></tr>
+            <tr class="customer-data-row" data-total="5.4"><td class="sticky-col">18-19</td><td class="num">5.4</td><td class="num">26.3</td><td class="num">1.7</td><td class="num">2,053</td><td class="num">2.1</td><td class="num">39.0%</td><td class="num">1.9</td><td class="num">35.0%</td><td class="num yoy-cell up">+13.6%</td></tr>
           </tbody>
         </table></div>
       </div>
@@ -935,14 +951,14 @@ table.data tr.total td.sticky-col{background:#eaf3ff}
       <div class="sub-panel hidden" id="customer-level">
         <div class="customer-share-chart"></div>
         <div class="table-scroll"><table class="data">
-          <thead><tr><th class="sticky-col">会员卡等级</th><th class="num">消费金额(亿)</th><th class="num">购物人数(万)</th><th class="num">客单件(件)</th><th class="num">客单价(元)</th><th class="num">复购率</th><th class="num">同比</th></tr></thead>
+          <thead><tr><th class="sticky-col">会员卡等级</th><th class="num">消费金额(亿)</th><th class="num">购物人数(万)</th><th class="num">客单件(件)</th><th class="num">客单价(元)</th><th class="num">毛利额(亿)</th><th class="num">毛利率</th><th class="num">净毛利额(亿)</th><th class="num">净毛利率</th><th class="num">同比</th></tr></thead>
           <tbody>
-              <tr class="total"><td class="sticky-col">合计</td><td class="num">296.5</td><td class="num">612.4</td><td class="num">2.4</td><td class="num">4,842</td><td class="num">36.8%</td><td class="num yoy-cell up">+18.2%</td></tr>
-            <tr class="customer-data-row" data-total="88.2"><td class="sticky-col">钻石</td><td class="num">88.2</td><td class="num">46.8</td><td class="num">3.6</td><td class="num">18,846</td><td class="num">52.4%</td><td class="num yoy-cell up">+19.2%</td></tr>
-            <tr class="customer-data-row" data-total="74.6"><td class="sticky-col">铂金</td><td class="num">74.6</td><td class="num">62.1</td><td class="num">3.0</td><td class="num">12,013</td><td class="num">45.8%</td><td class="num yoy-cell up">+17.6%</td></tr>
-            <tr class="customer-data-row" data-total="68.1"><td class="sticky-col">金卡</td><td class="num">68.1</td><td class="num">108.4</td><td class="num">2.5</td><td class="num">6,282</td><td class="num">39.1%</td><td class="num yoy-cell up">+15.1%</td></tr>
-            <tr class="customer-data-row" data-total="41.2"><td class="sticky-col">银卡</td><td class="num">41.2</td><td class="num">174.9</td><td class="num">1.9</td><td class="num">2,356</td><td class="num">28.7%</td><td class="num yoy-cell up">+11.4%</td></tr>
-            <tr class="customer-data-row" data-total="24.4"><td class="sticky-col">普卡</td><td class="num">24.4</td><td class="num">220.2</td><td class="num">1.4</td><td class="num">1,108</td><td class="num">17.9%</td><td class="num yoy-cell up">+7.8%</td></tr>
+              <tr class="total"><td class="sticky-col">合计</td><td class="num">296.5</td><td class="num">612.4</td><td class="num">2.4</td><td class="num">4,842</td><td class="num">129.6</td><td class="num">43.7%</td><td class="num">118.9</td><td class="num">40.1%</td><td class="num yoy-cell up">+18.2%</td></tr>
+            <tr class="customer-data-row" data-total="88.2"><td class="sticky-col">钻石</td><td class="num">88.2</td><td class="num">46.8</td><td class="num">3.6</td><td class="num">18,846</td><td class="num">40.6</td><td class="num">46.0%</td><td class="num">37.0</td><td class="num">42.0%</td><td class="num yoy-cell up">+19.2%</td></tr>
+            <tr class="customer-data-row" data-total="74.6"><td class="sticky-col">铂金</td><td class="num">74.6</td><td class="num">62.1</td><td class="num">3.0</td><td class="num">12,013</td><td class="num">32.8</td><td class="num">44.0%</td><td class="num">29.8</td><td class="num">40.0%</td><td class="num yoy-cell up">+17.6%</td></tr>
+            <tr class="customer-data-row" data-total="68.1"><td class="sticky-col">金卡</td><td class="num">68.1</td><td class="num">108.4</td><td class="num">2.5</td><td class="num">6,282</td><td class="num">29.3</td><td class="num">43.0%</td><td class="num">26.6</td><td class="num">39.0%</td><td class="num yoy-cell up">+15.1%</td></tr>
+            <tr class="customer-data-row" data-total="41.2"><td class="sticky-col">银卡</td><td class="num">41.2</td><td class="num">174.9</td><td class="num">1.9</td><td class="num">2,356</td><td class="num">16.9</td><td class="num">41.0%</td><td class="num">15.2</td><td class="num">37.0%</td><td class="num yoy-cell up">+11.4%</td></tr>
+            <tr class="customer-data-row" data-total="24.4"><td class="sticky-col">普卡</td><td class="num">24.4</td><td class="num">220.2</td><td class="num">1.4</td><td class="num">1,108</td><td class="num">9.5</td><td class="num">39.0%</td><td class="num">8.5</td><td class="num">35.0%</td><td class="num yoy-cell up">+7.8%</td></tr>
           </tbody>
         </table></div>
       </div>
@@ -950,16 +966,16 @@ table.data tr.total td.sticky-col{background:#eaf3ff}
       <div class="sub-panel hidden" id="customer-origin">
         <div class="customer-share-chart"></div>
         <div class="table-scroll"><table class="data">
-          <thead><tr><th class="sticky-col">客源地</th><th class="num">消费金额(亿)</th><th class="num">购物人数(万)</th><th class="num">客单件(件)</th><th class="num">客单价(元)</th><th class="num">复购率</th><th class="num">同比</th></tr></thead>
+          <thead><tr><th class="sticky-col">客源地</th><th class="num">消费金额(亿)</th><th class="num">购物人数(万)</th><th class="num">客单件(件)</th><th class="num">客单价(元)</th><th class="num">毛利额(亿)</th><th class="num">毛利率</th><th class="num">净毛利额(亿)</th><th class="num">净毛利率</th><th class="num">同比</th></tr></thead>
           <tbody>
-            <tr class="total"><td class="sticky-col">合计</td><td class="num">296.5</td><td class="num">612.4</td><td class="num">2.4</td><td class="num">4,842</td><td class="num">36.8%</td><td class="num yoy-cell up">+18.2%</td></tr>
-            <tr class="customer-data-row" data-total="58.2"><td class="sticky-col">广东</td><td class="num">58.2</td><td class="num">126.7</td><td class="num">2.4</td><td class="num">4,593</td><td class="num">38.6%</td><td class="num yoy-cell up">+20.5%</td></tr>
-            <tr class="customer-data-row" data-total="49.4"><td class="sticky-col">海南</td><td class="num">49.4</td><td class="num">108.2</td><td class="num">2.3</td><td class="num">4,566</td><td class="num">41.3%</td><td class="num yoy-cell up">+17.2%</td></tr>
-            <tr class="customer-data-row" data-total="36.8"><td class="sticky-col">北京</td><td class="num">36.8</td><td class="num">72.4</td><td class="num">2.5</td><td class="num">5,083</td><td class="num">37.8%</td><td class="num yoy-cell up">+16.9%</td></tr>
-            <tr class="customer-data-row" data-total="33.1"><td class="sticky-col">上海</td><td class="num">33.1</td><td class="num">65.9</td><td class="num">2.5</td><td class="num">5,023</td><td class="num">36.1%</td><td class="num yoy-cell up">+15.6%</td></tr>
-            <tr class="customer-data-row" data-total="24.7"><td class="sticky-col">浙江</td><td class="num">24.7</td><td class="num">51.6</td><td class="num">2.4</td><td class="num">4,787</td><td class="num">35.4%</td><td class="num yoy-cell up">+18.4%</td></tr>
-            <tr class="customer-data-row" data-total="21.9"><td class="sticky-col">江苏</td><td class="num">21.9</td><td class="num">45.7</td><td class="num">2.3</td><td class="num">4,792</td><td class="num">34.8%</td><td class="num yoy-cell up">+14.9%</td></tr>
-            <tr class="customer-data-row" data-total="72.4"><td class="sticky-col">其他</td><td class="num">72.4</td><td class="num">141.9</td><td class="num">2.2</td><td class="num">5,102</td><td class="num">33.9%</td><td class="num yoy-cell up">+13.7%</td></tr>
+            <tr class="total"><td class="sticky-col">合计</td><td class="num">296.5</td><td class="num">612.4</td><td class="num">2.4</td><td class="num">4,842</td><td class="num">129.6</td><td class="num">43.7%</td><td class="num">118.9</td><td class="num">40.1%</td><td class="num yoy-cell up">+18.2%</td></tr>
+            <tr class="customer-data-row" data-total="58.2"><td class="sticky-col">广东</td><td class="num">58.2</td><td class="num">126.7</td><td class="num">2.4</td><td class="num">4,593</td><td class="num">25.6</td><td class="num">44.0%</td><td class="num">23.3</td><td class="num">40.0%</td><td class="num yoy-cell up">+20.5%</td></tr>
+            <tr class="customer-data-row" data-total="49.4"><td class="sticky-col">海南</td><td class="num">49.4</td><td class="num">108.2</td><td class="num">2.3</td><td class="num">4,566</td><td class="num">21.2</td><td class="num">43.0%</td><td class="num">19.3</td><td class="num">39.0%</td><td class="num yoy-cell up">+17.2%</td></tr>
+            <tr class="customer-data-row" data-total="36.8"><td class="sticky-col">北京</td><td class="num">36.8</td><td class="num">72.4</td><td class="num">2.5</td><td class="num">5,083</td><td class="num">16.6</td><td class="num">45.0%</td><td class="num">15.1</td><td class="num">41.0%</td><td class="num yoy-cell up">+16.9%</td></tr>
+            <tr class="customer-data-row" data-total="33.1"><td class="sticky-col">上海</td><td class="num">33.1</td><td class="num">65.9</td><td class="num">2.5</td><td class="num">5,023</td><td class="num">14.6</td><td class="num">44.0%</td><td class="num">13.2</td><td class="num">40.0%</td><td class="num yoy-cell up">+15.6%</td></tr>
+            <tr class="customer-data-row" data-total="24.7"><td class="sticky-col">浙江</td><td class="num">24.7</td><td class="num">51.6</td><td class="num">2.4</td><td class="num">4,787</td><td class="num">10.6</td><td class="num">43.0%</td><td class="num">9.6</td><td class="num">39.0%</td><td class="num yoy-cell up">+18.4%</td></tr>
+            <tr class="customer-data-row" data-total="21.9"><td class="sticky-col">江苏</td><td class="num">21.9</td><td class="num">45.7</td><td class="num">2.3</td><td class="num">4,792</td><td class="num">9.2</td><td class="num">42.0%</td><td class="num">8.3</td><td class="num">38.0%</td><td class="num yoy-cell up">+14.9%</td></tr>
+            <tr class="customer-data-row" data-total="72.4"><td class="sticky-col">其他</td><td class="num">72.4</td><td class="num">141.9</td><td class="num">2.2</td><td class="num">5,102</td><td class="num">29.0</td><td class="num">40.0%</td><td class="num">26.1</td><td class="num">36.0%</td><td class="num yoy-cell up">+13.7%</td></tr>
           </tbody>
         </table></div>
       </div>
@@ -967,7 +983,7 @@ table.data tr.total td.sticky-col{background:#eaf3ff}
       <!-- <div class="sub-panel hidden" id="customer-price" data-split="1">
         <div class="customer-share-chart"></div>
         <div class="table-scroll"><table class="data">
-          <thead><tr><th class="sticky-col">价格带</th><th class="num">消费金额(亿)</th><th class="num">会员消费(亿)</th><th class="num nonmember-col">非会员消费(亿)</th><th class="num member-share-col">会员消费占比</th><th class="num">购物人数(万)</th><th class="num">客单价(元)</th><th class="num">复购率</th><th class="num">同比</th></tr></thead>
+          <thead><tr><th class="sticky-col">价格带</th><th class="num">消费金额(亿)</th><th class="num">会员消费(亿)</th><th class="num nonmember-col">非会员消费(亿)</th><th class="num member-share-col">会员消费占比</th><th class="num">购物人数(万)</th><th class="num">客单价(元)</th><th class="num">同比</th></tr></thead>
           <tbody>
             <tr class="customer-data-row" data-total="148.0" data-member="102.4" data-nonmember="45.6" data-member-share="69.2%"><td class="sticky-col">1800-5000（含）</td><td class="num">148.0</td><td class="num">102.4</td><td class="num nonmember-col">45.6</td><td class="num member-share-col">69.2%</td><td class="num">234.5</td><td class="num">6,311</td><td class="num">39.8%</td><td class="num yoy-cell up">+19.2%</td></tr>
             <tr class="customer-data-row" data-total="132.7" data-member="91.8" data-nonmember="40.9" data-member-share="69.2%"><td class="sticky-col">5000以上</td><td class="num">132.7</td><td class="num">91.8</td><td class="num nonmember-col">40.9</td><td class="num member-share-col">69.2%</td><td class="num">210.3</td><td class="num">6,310</td><td class="num">42.6%</td><td class="num yoy-cell up">+21.3%</td></tr>
@@ -2599,6 +2615,7 @@ function setupCustomerCategoryDrilldown(){
   var table=document.getElementById('c-cat-drill-table');
   var back=document.getElementById('c-cat-drill-back');
   var currentCat='', currentBrand='', drillOrigin='category';
+  var catMargin={'香化':44.0,'腕表珠宝':42.0,'奢侈品':43.0,'进口酒':35.0,'进口烟':28.0,'国产酒':33.0,'国产烟':27.0,'食品百货':30.0,'商贸':32.0};
   var brandProducts={};
   Object.keys(data).forEach(function(cat){
     (data[cat].brands||[]).forEach(function(b){brandProducts[b.name]=b.products||[];});
@@ -2610,7 +2627,8 @@ function setupCustomerCategoryDrilldown(){
     title.textContent=cat+' · 品牌列表';
     back.innerHTML='<i class="fa-solid fa-arrow-left"></i> 返回业务品类';
     var brands=(data[cat]||{}).brands||[];
-    table.innerHTML='<table class="data"><thead><tr><th class="sticky-col">品牌</th><th class="num">消费金额(亿)</th><th class="num">会员消费(亿)</th><th class="num">非会员消费(亿)</th><th class="num">会员消费占比</th><th class="num">购物人数(万)</th><th class="num">客单价(元)</th><th class="num">复购率</th><th class="num">同比</th></tr></thead><tbody>'+brands.map(function(b){var total=b.member+b.non;var share=(b.member/total*100).toFixed(1)+'%';return '<tr class="customer-brand-row"><td class="sticky-col">'+b.name+'</td><td class="num">'+total.toFixed(1)+'</td><td class="num">'+b.member+'</td><td class="num">'+b.non+'</td><td class="num">'+share+'</td><td class="num">'+b.shoppers+'</td><td class="num">'+b.avg+'</td><td class="num">'+b.rep+'</td><td class="num yoy-cell up">+14.2%</td></tr>';}).join('')+'</tbody></table>';
+    var gm=catMargin[currentCat]||40; var net=gm-4;
+    table.innerHTML='<table class="data"><thead><tr><th class="sticky-col">品牌</th><th class="num">消费金额(亿)</th><th class="num">会员消费(亿)</th><th class="num">非会员消费(亿)</th><th class="num">会员消费占比</th><th class="num">购物人数(万)</th><th class="num">客单价(元)</th><th class="num">毛利额(亿)</th><th class="num">毛利率</th><th class="num">净毛利额(亿)</th><th class="num">净毛利率</th><th class="num">同比</th></tr></thead><tbody>'+brands.map(function(b){var total=b.member+b.non;var share=(b.member/total*100).toFixed(1)+'%';return '<tr class="customer-brand-row"><td class="sticky-col">'+b.name+'</td><td class="num">'+total.toFixed(1)+'</td><td class="num">'+b.member+'</td><td class="num">'+b.non+'</td><td class="num">'+share+'</td><td class="num">'+b.shoppers+'</td><td class="num">'+b.avg+'</td><td class="num">'+(total*gm/100).toFixed(1)+'</td><td class="num">'+gm.toFixed(1)+'%</td><td class="num">'+(total*net/100).toFixed(1)+'</td><td class="num">'+net.toFixed(1)+'%</td><td class="num yoy-cell up">+14.2%</td></tr>';}).join('')+'</tbody></table>';
     panel.classList.remove('hidden');
     table.querySelectorAll('.customer-brand-row').forEach(function(row,idx){row.addEventListener('click',function(){renderSkus(brands[idx].name,brands[idx].products||[]);});});
   }
@@ -2620,7 +2638,8 @@ function setupCustomerCategoryDrilldown(){
     crumbBrand.textContent=brand;
     title.textContent=currentCat+' / '+brand+' · 商品列表';
     back.innerHTML='<i class="fa-solid fa-arrow-left"></i> 返回品牌';
-    table.innerHTML='<table class="data"><thead><tr><th class="sticky-col">商品</th><th class="num">消费金额(万)</th><th class="num">会员消费(万)</th><th class="num">非会员消费(万)</th><th class="num">会员消费占比</th><th class="num">购物人数(万)</th><th class="num">客单价(元)</th><th class="num">复购率</th><th class="num">同比</th></tr></thead><tbody>'+products.map(function(p){var member=parseFloat(p[2].replace(/,/g,''));var non=parseFloat(p[3].replace(/,/g,''));var share=(member+non)?(member/(member+non)*100).toFixed(1):'0.0';return '<tr><td class="sticky-col">'+p[0]+'</td><td class="num">'+p[1]+'</td><td class="num">'+p[2]+'</td><td class="num">'+p[3]+'</td><td class="num">'+share+'%</td><td class="num">'+p[4]+'</td><td class="num">'+p[5]+'</td><td class="num">35.0%</td><td class="num yoy-cell up">+14.2%</td></tr>';}).join('')+'</tbody></table>';
+    var gm=catMargin[currentCat]||40; var net=gm-4;
+    table.innerHTML='<table class="data"><thead><tr><th class="sticky-col">商品</th><th class="num">消费金额(万)</th><th class="num">会员消费(万)</th><th class="num">非会员消费(万)</th><th class="num">会员消费占比</th><th class="num">购物人数(万)</th><th class="num">客单价(元)</th><th class="num">毛利额(万元)</th><th class="num">毛利率</th><th class="num">净毛利额(万元)</th><th class="num">净毛利率</th><th class="num">同比</th></tr></thead><tbody>'+products.map(function(p){var member=parseFloat(p[2].replace(/,/g,''));var non=parseFloat(p[3].replace(/,/g,''));var sales=parseFloat(p[1].replace(/,/g,''));var share=(member+non)?(member/(member+non)*100).toFixed(1):'0.0';return '<tr><td class="sticky-col">'+p[0]+'</td><td class="num">'+p[1]+'</td><td class="num">'+p[2]+'</td><td class="num">'+p[3]+'</td><td class="num">'+share+'%</td><td class="num">'+p[4]+'</td><td class="num">'+p[5]+'</td><td class="num">'+(sales*gm/100).toFixed(1)+'</td><td class="num">'+gm.toFixed(1)+'%</td><td class="num">'+(sales*net/100).toFixed(1)+'</td><td class="num">'+net.toFixed(1)+'%</td><td class="num yoy-cell up">+14.2%</td></tr>';}).join('')+'</tbody></table>';
   }
   back.addEventListener('click',function(){if(currentBrand){renderBrands(currentCat);}else{panel.classList.add('hidden');var btn=document.querySelector('#customer-segment-card .sub-tab[data-tab="category"]');if(btn)btn.click();}});
   document.querySelectorAll('#customer-category tbody tr.customer-cat-row').forEach(function(row){
@@ -3335,19 +3354,28 @@ var DATA_NOTES={
     +'<div class="note-line">5. 实际达成率：营业收入/预算</div>'
     +'<div class="note-line">6. 预算剩余未达成：预算-营业收入</div>'
     +'<div class="note-line">7. 今后每日需达成：预算剩余未达成/当年剩余天数</div>'},
-  'member':{title:'会员规模',html:'<div class="note-line">1. 会员总数：新增会员 + 活跃会员 + 沉淀与睡眠会员</div>'
-    +'<div class="note-line">2. 新增会员：查询时间内注册的会员数</div>'
-    +'<div class="note-line">3. 活跃会员：近一年内有消费会员。如查询时间开始时间是2025年12月1日，那么近一年的时间是2024年12月1日到2025年11月30日</div>'
+  'member':{title:'顾客运营',html:'<div class="note-section">会员规模</div>'
+    +'<div class="note-line">1. 会员总数：由新增会员、活跃会员、沉淀与睡眠会员三部分加总构成</div>'
+    +'<div class="note-line">2. 新增会员：在所选查询时间范围内完成注册的会员数量</div>'
+    +'<div class="note-line">3. 活跃会员：近一年内有过消费的会员；计算逻辑以查询开始日期为基准向前推一年（含起始日、不含去年同期当日），例如查询开始时间为2025年12月1日，则统计区间为2024年12月1日至2025年11月30日</div>'
     +'<div class="note-line">4. 沉淀与睡眠会员：</div>'
-    +'<div class="note-sub">1）沉淀会员人数（末次消费在 1-2 年）：查询日期向前推 1-2 年有消费的会员数。</div>'
-    +'<div class="note-sub">2）睡眠会员人数（末次消费在 2 年前或零消费）：末次消费在 2 年前的会员数 + 零消费会员数</div>'
-    +'<div class="note-line">5. 会员/非会员消费情况：将EOP与大会员系统订单、商品进行关联，获取会员/非会员的消费情况</div>'
-    +'<div class="note-sub">1）会员消费：能关联上订单、商品为会员消费</div>'
-    +'<div class="note-sub">2）非会员消费：未关联上的订单、商品为非会员消费</div>'
-    +'<div class="note-note-line">注：部分门店缺失关联条件，识别不到会员消费情况；根据已知的关联条件部分门店关联率达不到100%</div>'
-    +'<div class="note-line">6. 新会员/老会员消费情况：</div>'
-    +'<div class="note-sub">1）新会员消费：查询时间内注册且消费的会员消费</div>'
-    +'<div class="note-sub">2）老会员消费：查询时间前注册且在查询时间内进行消费的会员</div>'}
+    +'<div class="note-sub">1）沉淀会员人数（末次消费在1–2年）：以查询日期为基准向前推算1至2年内有过消费的会员数</div>'
+    +'<div class="note-sub">2）睡眠会员人数（末次消费在2年前或零消费）：末次消费发生在查询日期2年前的会员数，加上从未产生消费的零消费会员数</div>'
+    +'<div class="note-section">顾客消费</div>'
+    +'<div class="note-note-line">注：消费数据通过关联大会员系统订单获取，因部分门店缺失关联条件或关联率未达100%，数据可能存在偏差</div>'
+    +'<div class="note-line">1. 销售额：含税额、按销售口径统计、已扣减退货金额</div>'
+    +'<div class="note-line">2. 购物人数：依据“身份证号/护照号/证件号 &gt; 手机号（收货） &gt; 订单号”优先级去重，按当天去重、跨天不去重，并已扣减退货</div>'
+    +'<div class="note-line">3. 客单价：销售额 ÷ 购物人数</div>'
+    +'<div class="note-line">4. 毛利额：含税销售额 − 含税销售成本</div>'
+    +'<div class="note-line">5. 毛利率：毛利额 ÷ 含税销售额</div>'
+    +'<div class="note-line">6. 净毛利额：含税销售额 − 含税销售成本 − 用券金额 − 赠送积分</div>'
+    +'<div class="note-line">7. 净毛利率：净毛利额 ÷ 含税销售额</div>'
+    +'<div class="note-line">8. 会员/非会员消费情况：将EOP与大会员系统订单及商品关联，区分会员与非会员消费</div>'
+    +'<div class="note-sub">1）会员消费：成功关联订单与商品的记为会员消费</div>'
+    +'<div class="note-sub">2）非会员消费：未能关联的订单与商品记为非会员消费</div>'
+    +'<div class="note-line">9. 新会员/老会员消费情况：</div>'
+    +'<div class="note-sub">1）新会员消费：在查询时间内注册且产生消费的会员消费</div>'
+    +'<div class="note-sub">2）老会员消费：在查询时间前注册且在查询时间内产生消费的会员消费</div>'}
 };
 function bindDataNote(btnId,key){
   var btn=document.getElementById(btnId);
@@ -3359,6 +3387,7 @@ function bindDataNote(btnId,key){
     pop.className='note-pop';
     pop.innerHTML='<div class="note-pop-head"><span>'+cfg.title+' · 数据说明</span><button type="button" class="note-pop-close" title="关闭">&times;</button></div><div class="note-pop-body">'+cfg.html+'</div>';
     document.body.appendChild(pop);
+    makeDraggable(pop, pop.querySelector('.note-pop-head'));
     var r=btn.getBoundingClientRect();
     var pw=Math.min(400,window.innerWidth-16);
     pop.style.width=pw+'px';
@@ -3380,6 +3409,136 @@ bindDataNote('note-btn-channel','channel');
 bindDataNote('note-btn-product','product');
 bindDataNote('note-btn-budget','budget');
 bindDataNote('note-btn-member','member');
+
+/* ===== 通用拖动：按住手柄可拖动浮层 ===== */
+function makeDraggable(el, handle){
+  if(!el) return;
+  if(!handle) handle=el;
+  var drag=false, sx=0, sy=0, ox=0, oy=0;
+  handle.addEventListener('mousedown', function(e){
+    if(e.target.closest('.note-pop-close')) return;
+    drag=true;
+    var r=el.getBoundingClientRect();
+    el.style.right='auto';
+    el.style.left=r.left+'px';
+    el.style.top=r.top+'px';
+    sx=e.clientX; sy=e.clientY; ox=r.left; oy=r.top;
+    el.classList.add('dragging');
+    e.preventDefault();
+    document.addEventListener('mousemove', mm);
+    document.addEventListener('mouseup', mu);
+  });
+  function mm(e){
+    if(!drag) return;
+    el.style.left=(ox+(e.clientX-sx))+'px';
+    el.style.top=(oy+(e.clientY-sy))+'px';
+  }
+  function mu(){
+    drag=false;
+    el.classList.remove('dragging');
+    document.removeEventListener('mousemove', mm);
+    document.removeEventListener('mouseup', mu);
+  }
+}
+
+/* ===== Markdown -> HTML（支持 #/##/###、列表、表格、引用、加粗） ===== */
+function mdToHtml(src){
+  var lines=String(src||'').replace(/\r/g,'').split('\n');
+  var out=[], i=0;
+  function inline(s){ return s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>'); }
+  function splitRow(l){ return l.split('|').map(function(x){return x.trim();}).filter(function(x){return x.length;}); }
+  function buildOrdered(items){
+    var j=0;
+    function rec(min){
+      var html='<ol class="md-ol">';
+      while(j<items.length && items[j].indent===min){
+        var it=items[j];
+        html+='<li>'+it.text;
+        var next=items[j+1];
+        if(next && next.indent>min){
+          j++;
+          html+=rec(next.indent);
+        }else{
+          j++;
+        }
+        html+='</li>';
+      }
+      html+='</ol>';
+      return html;
+    }
+    return rec(0);
+  }
+  while(i<lines.length){
+    var line=lines[i];
+    if(!line.trim()){ i++; continue; }
+    if(line.charAt(0)==='#'){
+      var lvl=0; while(line.charAt(lvl)==='#') lvl++;
+      out.push('<div class="md-h'+(lvl===1?'1':lvl===2?'2':'3')+'">'+inline(line.slice(lvl).trim())+'</div>');
+      i++; continue;
+    }
+    if(line.charAt(0)==='>'){
+      var q=[];
+      while(i<lines.length && lines[i].charAt(0)==='>'){ q.push(inline(lines[i].replace(/^>\s?/,''))); i++; }
+      out.push('<div class="md-quote">'+q.join('<br>')+'</div>'); continue;
+    }
+    if(line.charAt(0)==='|'){
+      var header=splitRow(line); i++;
+      if(i<lines.length && /^\s*\|?[\s:-]+$/.test(lines[i])) i++;
+      var rows=[];
+      while(i<lines.length && lines[i].charAt(0)==='|'){ rows.push(splitRow(lines[i])); i++; }
+      out.push('<table class="md-table"><thead><tr>'+header.map(function(h){return '<th>'+inline(h)+'</th>';}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+r.map(function(c){return '<td>'+inline(c)+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table>');
+      continue;
+    }
+    if(/^\s*[-*]\s/.test(line)){
+      var ul=[];
+      while(i<lines.length && /^\s*[-*]\s/.test(lines[i])){ ul.push(inline(lines[i].slice(2))); i++; }
+      out.push('<ul class="md-ul">'+ul.map(function(t){return '<li>'+t+'</li>';}).join('')+'</ul>');
+      continue;
+    }
+    if(/^\s*\d+[.、)）]/.test(line)){
+      var items=[];
+      while(i<lines.length && /^\s*\d+[.、)）]/.test(lines[i])){
+        var m=lines[i].match(/^(\s*)\d+[.、)）]\s*(.*)$/);
+        items.push({indent:m[1].replace(/\t/g,'  ').length, text:inline(m[2])});
+        i++;
+      }
+      out.push(buildOrdered(items));
+      continue;
+    }
+    out.push('<div class="md-p">'+inline(line)+'</div>'); i++;
+  }
+  return out.join('');
+}
+
+/* ===== 右上角「开发逻辑」悬浮按钮 ===== */
+(function(){
+  var btn=document.getElementById('devLogicBtn');
+  if(!btn) return;
+  var pop=null;
+  function ensure(){
+    if(pop) return;
+    var mdSrc=document.getElementById('dev-md');
+    var mdHtml=mdSrc?mdToHtml(mdSrc.textContent):'(说明文档未找到)';
+    pop=document.createElement('div');
+    pop.className='note-pop';
+    pop.innerHTML='<div class="note-pop-head"><span>开发逻辑 · 页面功能与交互说明</span><button type="button" class="note-pop-close" title="关闭">&times;</button></div><div class="note-pop-body">'+mdHtml+'</div>';
+    document.body.appendChild(pop);
+    pop.classList.add('hidden');
+    var r=btn.getBoundingClientRect();
+    var pw=Math.min(640,window.innerWidth-24);
+    pop.style.width=pw+'px';
+    pop.style.left=Math.max(8,Math.min(r.left-pw,window.innerWidth-pw-8))+'px';
+    pop.style.top=(r.bottom+8)+'px';
+    pop.querySelector('.note-pop-close').addEventListener('click',function(e){e.stopPropagation();pop.classList.add('hidden');});
+    makeDraggable(pop, pop.querySelector('.note-pop-head'));
+  }
+  btn.addEventListener('click',function(e){
+    e.stopPropagation();
+    ensure();
+    pop.classList.toggle('hidden');
+  });
+  document.addEventListener('click',function(e){ if(pop && !pop.contains(e.target) && e.target!==btn){ pop.classList.add('hidden'); } });
+})();
 
 
 var trendPalette=['#1769d6','#e5484d','#22a06b','#f2b26b','#8aa6d4','#71b7a6','#c07d13'];
@@ -3512,21 +3671,13 @@ function renderAllTrends(){
   document.querySelectorAll('.trend-card').forEach(function(card){renderTrendChart(card);});
 }
 var holidayRanges={
-  '元旦':['2026-01-01','2026-01-03'],
   '春节':['2026-02-15','2026-02-23'],
-  '清明节':['2026-04-04','2026-04-06'],
   '劳动节':['2026-05-01','2026-05-05'],
-  '端午节':['2026-06-19','2026-06-21'],
-  '中秋节':['2026-09-25','2026-09-27'],
   '国庆节':['2026-10-01','2026-10-07']
 };
 var holidayBoosts={
-  '元旦':1.12,
   '春节':1.28,
-  '清明节':1.08,
   '劳动节':1.18,
-  '端午节':1.10,
-  '中秋节':1.16,
   '国庆节':1.26
 };
 function applyHolidayPreset(){
@@ -4352,5 +4503,399 @@ setupTrendCharts();
 
 
 </script>
+<script type="text/markdown" id="dev-md"># 页面功能与交互说明
+
+> 依据文件：`SaiDao Dashboard.html`  
+> 整理范围：公司整体当前可见模块  
+> 其他说明：所有指标展示同比，同比红增绿减
+
+## 1. 页面概览与导航
+
+### 1.1 一级导航
+
+- 公司整体
+- 海南离岛免税赛道
+- 综合旅游零售赛道
+- 线上赛道
+- 国际化赛道
+
+一级导航用于切换公司整体与四大赛道。当前文档只说明“公司整体”下的页面。
+
+### 1.2 公司整体二级模块
+
+- 总览
+- 渠道运营
+- 产品运营
+- 顾客运营
+
+### 1.3 页面基础信息
+
+- 报表名称：四大赛道经营分析看板
+- 最近更新时间：2026-08-13 09:30
+- 数据说明入口：总览核心经营指标、预算达成情况、渠道运营分析、产品运营、顾客运营会员规模等卡片均有“数据说明”入口
+
+## 2. 筛选区
+
+### 2.1 时间筛选
+
+公司整体页顶部提供全局时间筛选：
+
+| 控件 | 说明 |
+| --- | --- |
+| 时间粒度 | 年、月、日区间 |
+| 年度 | 选择年份，时间粒度为“年”时显示 |
+| 月份 | 选择月份，时间粒度为“月”时显示 |
+| 日期区间 | 选择日期区间，时间粒度为“日区间”时显示 |
+| 节假日 | 枚举值（不限(自定义)/春节/劳动节/国庆节,时间粒度为“日区间”时显示 。选择“春节/劳动节/国庆节”，日期区间自动定位到对应日期且不可修改；当选择“不限(自定义)”时，日期区间可自由选择|
+
+### 2.2 时间粒度与趋势规则
+
+- 时间粒度为“年”：趋势图按月展示。
+- 时间粒度为“月”：趋势图按所选月份展示每天趋势。
+- 时间粒度为“日区间”：趋势图按区间内每天展示。
+- 日区间不足 7 天时，按截至日近 7 天展示。
+
+### 2.3 节假日展示规则
+
+- 节假日为“不限（自定义）”：各指标展示普通同比，不展示日均。
+- 选中具体节假日时：
+  - 指标卡： 销售额、购物人数、毛利额、净毛利额等金额/人数类指标展示日均值和日均同比；客单价、毛利率、净毛利率、连带率等比率或均值类指标仍展示普通同比。
+  - 列表：金额、人数、PV、数量等指标展示日均同比；毛利率、净毛利率、客单价、连带率等仍展示同比。
+
+### 2.4 维度筛选
+
+公司整体页筛选器按模块显示，不同模块展示对应筛选项：
+
+| 筛选项 | 支持模块 | 交互 |
+| --- | --- | --- |
+| 赛道 | 渠道运营、产品运营、顾客运营 | 单选；切换后联动门店筛选，默认全部赛道 |
+| 门店 | 渠道运营、产品运营、顾客运营 | 多选下拉 ，默认全部/空 |
+| 业务品类 | 渠道运营、产品运营、顾客运营 | 多选下拉，默认全部/空 |
+| 品牌 | 渠道运营、产品运营、顾客运营 | 多选下拉，默认全部/空 |
+
+### 2.5 编码与名称展示
+
+门店、品牌、商品等筛选项和数据展示按 `[编码]名称` 格式体现，例如：
+
+- `[030031] Chanel 香奈儿`
+- `[6858] 三亚国投店`
+- `[C001930] 香奈儿五号香水（经典）50ml`
+
+
+## 3. 总览
+
+### 3.1 核心经营指标
+
+展示 5 个指标卡：
+
+- 销售额
+- 购物人数
+- 客单价
+- 毛利率
+- 净毛利率
+
+### 3.2 四大赛道经营情况
+
+包含：
+
+- 各赛道销售额占比条
+- 四大赛道卡片
+
+
+每个赛道卡片展示：
+
+- 销售额
+- 购物人数
+- 客单价
+- 毛利率
+- 净毛利率
+- 销售额占比
+
+### 3.3 预算达成情况
+
+预算达成情况包含 5 个指标卡：
+
+- 营业收入
+- 年度预算
+- 预算达成率
+- 预算剩余未达成
+- 今后每日需达成
+
+下方重点门店预算表展示：
+
+- 重点门店
+- 营业收入（亿元）
+- 日均营收（万元）
+- 预算（亿元）
+- 预算应达成率
+- 实际达成率
+- 预算剩余未达成（亿元）
+- 今后每日需达成（万元）
+
+重点门店按照已有预算的重点门店展示，可参照大会员APP
+
+
+## 4. 渠道运营
+
+### 4.1 四大赛道指标卡
+
+渠道运营页顶部展示四大赛道指标卡，包含：
+
+- 销售额
+- 购物人数
+- 客单价
+- 毛利额
+- 毛利率
+- 净毛利额
+- 净毛利率
+
+### 4.2 渠道运营分析表
+
+列表结构：
+
+- 赛道
+- 销售额（亿元）
+- 销售额占比
+- 毛利额（亿元）
+- 毛利率
+- 净毛利额（亿元）
+- 净毛利率
+- PV（万人次）
+- 进店人数 / UV（万人）
+- 购物人数（万人）
+- 转化率
+- 客单价（元）
+- 销售数量（万件）
+- 件单价（元）
+- 连带率（件/票）
+
+### 4.3 赛道下钻到门店(待定)
+
+交互路径：
+
+1. 点击渠道运营分析表中的赛道。
+2. 下方展开该赛道的门店明细。
+3. 门店明细表格与上方渠道表指标一致。
+4. 点击“返回赛道汇总”关闭下钻。
+
+### 4.4 渠道运营趋势
+
+趋势图支持：
+
+- TAB：整体、四大赛道
+- 展示指标：列表已展示的指标（销售额、毛利额、净毛利额、毛利率、净毛利率、购物人数、客单价等）
+- 四大赛道模式下额外支持“销售额占比”
+- 选择“销售额占比”时，按海南离岛免税、综合旅游零售、线上、国际化四个赛道展示堆叠面积图
+- 堆叠面积图使用半透明填充色
+
+## 5. 产品运营
+
+### 5.1 子 TAB
+
+- 业务品类
+- TOP50品牌
+- TOP50商品
+
+### 5.2 列表指标
+
+产品运营列表主要包含：
+
+- 销售额、
+- 销售额占比
+- 毛利额
+- 毛利额占比
+- 毛利率
+- 净毛利额
+- 净毛利额占比
+- 净毛利率
+- 购物人数
+- 客单价
+- 销售数量
+- 件单价
+- 连带率
+
+### 5.3 下钻路径
+
+- 业务品类 → 品牌 → 商品
+- TOP50品牌 → 商品
+
+下钻表格沿用上方产品运营表的主要指标。
+
+### 5.4 产品运营趋势
+
+- TAB：整体、业务品类
+- 展示指标：列表已展示的指标（销售额、毛利额、毛利率、净毛利额、净毛利率、购物人数、客单价、销售数量、件单价、连带率等）
+
+## 6. 顾客运营
+
+### 6.1 会员规模
+
+- 会员总数
+- 新增会员
+- 活跃会员
+- 沉淀与睡眠会员
+
+### 6.2 顾客消费
+
+- 消费金额
+- 购物人数
+- 客单价
+
+下方提供两组顾客结构：
+
+- 会员 / 非会员
+- 新会员 / 老会员
+
+每组结构包含：
+
+- 环形图
+- 消费金额
+- 消费金额占比
+- 购物人数
+- 客单价
+- 毛利率
+- 净毛利率
+
+### 6.3 顾客消费分析
+
+子 TAB：
+
+- 赛道
+- 业务品类
+- 性别
+- 年龄段
+- 会员卡等级
+- 客源地
+
+每个 TAB 均包含：
+
+- 销售金额占比图
+
+列表指标：
+
+- 消费金额
+- 会员消费
+- 非会员消费
+- 会员消费占比
+- 购物人数
+- 客单价
+- 毛利额
+- 毛利率
+- 净毛利额
+- 净毛利率
+
+### 6.4 仅看会员
+
+顾客消费分析提供“仅看会员”开关：
+
+- 开启后隐藏非会员相关列（包括消费金额、非会员消费、会员消费占比）
+- 占比图和各列表各列改为会员口径。
+
+### 6.5 顾客下钻
+
+- 赛道 → 门店
+- 业务品类 → 品牌 → 商品
+
+### 6.6 顾客运营趋势
+
+趋势图支持：
+
+- 整体
+- 会员 / 非会员
+- 新老会员
+- 业务品类
+- 会员卡等级
+- 性别
+- 年龄段
+
+可选指标：列表所有指标（消费金额、会员消费、非会员消费、会员消费占比、购物人数、客单价、毛利额、毛利率、净毛利额、净毛利率）
+
+支持“仅看会员”开关，
+- 开启后隐藏非会员相关列（包括消费金额、非会员消费、会员消费占比）
+- 趋势图按会员口径展示。
+
+## 7. 通用说明及交互
+
+### 7.1 表格交互
+- 合计行在首行。
+- 列表支持分页
+- 部分列头支持点击排序，可切换升序/降序。
+- 所有数值列表均保留同比。
+
+### 7.2 数据说明交互
+
+- 鼠标悬停或点击“数据说明”可展开说明。
+
+### 7.3 页面切换交互
+
+- 一级导航切换公司整体与四大赛道。
+- 二级模块切换总览、渠道运营、产品运营、顾客运营。
+- 切换页面后回到页面顶部。
+- 筛选区按当前模块显示对应筛选项。
+- 筛选器按模块联动展示，避免显示不适用于当前模块的维度。
+
+## 8. 数据说明
+### 8.1 公司整体-总览-核心指标卡/公司整体-渠道运营/公司整体-产品运营
+
+1. 销售额：含税，销售口径，扣减退货
+2. 购物人数：按照"身份证号/护照号/证件号>手机号(收货)>订单号"优先级去重计算，当天去重，跨天不去重，扣减退货
+3. 客单价：销售额/购物人数
+4. 毛利额：含税销售额-含税销售成本
+5. 毛利率：毛利额/含税销售额
+6. 净毛利额：含税销售额-含税销售成本-用券金额-赠送积分
+7. 净毛利率：净毛利额/含税销售额
+8. 访问人次(PV)：线上页面浏览人次，海南电商离岛免税、会员优选、中免国际会员购有值
+9. 进店人数：线下进店人数，海棠湾、新海港、日月店、北京机场、上海机场有值
+10. 访问人数(UV)：线上页面浏览人数，海南电商离岛免税、会员优选、中免国际会员购有值
+11. 转化率：购物人数/进店人数或UV
+12. 件单价：销售额/销售数量
+13. 连带率：销售数量/票数
+
+### 8.2 公司整体-总览-预算达成情况
+
+1. 营业收入：完整月为财务口径，取自久其系统，当月为业务口径含税销售额
+2. 日均营收：营业收入/当年已过天数
+3. 预算：线下提供
+4. 预算应达成率：当年已过天数/365
+5. 实际达成率：营业收入/预算
+6. 预算剩余未达成：预算-营业收入
+7. 今后每日需达成：预算剩余未达成/当年剩余天数
+
+### 8.3 公司整体-顾客运营
+
+**会员规模**
+1. 会员总数：新增会员 + 活跃会员 + 沉淀与睡眠会员
+2. 新增会员：查询时间内注册的会员数
+3. 活跃会员：近一年内有消费会员。如查询时间开始时间是2025年12月1日，那么近一年的时间是2024年12月1日到2025年11月30日
+4. 沉淀与睡眠会员：
+  1）沉淀会员人数（末次消费在 1-2 年）：查询日期向前推 1-2 年有消费的会员数。
+  2）睡眠会员人数（末次消费在 2 年前或零消费）：末次消费在 2 年前的会员数 + 零消费会员数
+
+**顾客消费**
+**注：通过关联大会员系统订单获取会员的消费情况，部分门店缺失关联条件、部分门店关联率达不到100%**
+1. 销售额：含税，销售口径，扣减退货
+2. 购物人数：按照"身份证号/护照号/证件号>手机号(收货)>订单号"优先级去重计算，当天去重，跨天不去重，扣减退货
+3. 客单价：销售额/购物人数
+4. 毛利额：含税销售额-含税销售成本
+5. 毛利率：毛利额/含税销售额
+6. 净毛利额：含税销售额-含税销售成本-用券金额-赠送积分
+7. 净毛利率：净毛利额/含税销售额
+8. 会员/非会员消费情况：将EOP与大会员系统订单、商品进行关联，获取会员/非会员的消费情况
+  1）会员消费：能关联上订单、商品为会员消费
+  2）非会员消费：未关联上的订单、商品为非会员消费
+9. 新会员/老会员消费情况：
+  1）新会员消费：查询时间内注册且消费的会员消费
+  2）老会员消费：查询时间前注册且在查询时间内进行消费的会员
+
+## 9. 四大赛道TAB与公司整体TAB 区别
+
+1. 无四大赛道筛选项
+2. 总览-预算达成页面
+  1）门店维度（待定）
+  2）预算相关指标展示为"-"
+3. 渠道运营
+  1）无赛道卡片页
+  2）首列门店，不可下钻
+4. 顾客运营，无会员规模模块</script>
 </body>
 </html>
